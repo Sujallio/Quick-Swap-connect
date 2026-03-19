@@ -14,13 +14,134 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          city: string
+          created_at: string
+          id: string
+          is_blocked: boolean
+          name: string
+          phone: string
+          rating: number
+          total_ratings: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          city?: string
+          created_at?: string
+          id?: string
+          is_blocked?: boolean
+          name?: string
+          phone?: string
+          rating?: number
+          total_ratings?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          id?: string
+          is_blocked?: boolean
+          name?: string
+          phone?: string
+          rating?: number
+          total_ratings?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      requests: {
+        Row: {
+          amount: number
+          city: string
+          created_at: string
+          description: string | null
+          have_type: string
+          id: string
+          location_text: string
+          need_type: string
+          payment_id: string | null
+          status: string
+          updated_at: string
+          urgency: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          city: string
+          created_at?: string
+          description?: string | null
+          have_type: string
+          id?: string
+          location_text?: string
+          need_type: string
+          payment_id?: string | null
+          status?: string
+          updated_at?: string
+          urgency?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          city?: string
+          created_at?: string
+          description?: string | null
+          have_type?: string
+          id?: string
+          location_text?: string
+          need_type?: string
+          payment_id?: string | null
+          status?: string
+          updated_at?: string
+          urgency?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      unlocks: {
+        Row: {
+          created_at: string
+          id: string
+          payment_id: string | null
+          request_id: string
+          viewer_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payment_id?: string | null
+          request_id: string
+          viewer_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payment_id?: string | null
+          request_id?: string
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unlocks_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      check_daily_request_limit: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
