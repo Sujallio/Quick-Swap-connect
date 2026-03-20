@@ -117,10 +117,8 @@ const HomePage = () => {
   return (
     <div className="pb-20 pt-4">
       <div className="px-4 space-y-4">
-        <div>
-          <h1 className="text-xl font-bold text-foreground">QuickSwap Cash</h1>
-          <p className="text-sm text-muted-foreground">Find nearby cash exchanges</p>
-        </div>
+        <p className="text-sm text-muted-foreground">Find nearby cash exchanges</p>
+
 
         {/* Filters */}
         <div className="flex gap-2">

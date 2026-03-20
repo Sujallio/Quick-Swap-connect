@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
+import AppHeader from "@/components/AppHeader";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import CreateRequestPage from "@/pages/CreateRequestPage";
@@ -38,6 +39,7 @@ const AppRoutes = () => {
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      {user && <AppHeader />}
       {user && <BottomNav />}
     </>
   );
