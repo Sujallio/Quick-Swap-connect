@@ -20,7 +20,7 @@ const HomePage = () => {
     queryFn: async () => {
       let q = supabase
         .from("requests")
-        .select("*, profiles!requests_user_id_fkey(phone)")
+        .select("*")
         .eq("status", "active")
         .order("created_at", { ascending: false });
 
@@ -33,20 +33,39 @@ const HomePage = () => {
     },
   });
 
-  // Fetch user's unlocks
+  // Fetch user's unlocks and the phone numbers for unlocked requests
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("unlocks")
-      .select("request_id")
-      .eq("viewer_id", user.id)
-      .then(({ data }) => {
-        if (data) {
-          const map: Record<string, string> = {};
-          data.forEach((u) => { map[u.request_id] = "unlocked"; });
-          setUnlockedMap(map);
-        }
+    (async () => {
+      const { data: unlocks } = await supabase
+        .from("unlocks")
+        .select("request_id")
+        .eq("viewer_id", user.id);
+      if (!unlocks || unlocks.length === 0) return;
+
+      const requestIds = unlocks.map((u) => u.request_id);
+      // Get user_ids for those requests
+      const { data: reqs } = await supabase
+        .from("requests")
+        .select("id, user_id")
+        .in("id", requestIds);
+      if (!reqs) return;
+
+      const userIds = [...new Set(reqs.map((r) => r.user_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, phone")
+        .in("user_id", userIds);
+
+      const phoneByUserId: Record<string, string> = {};
+      profiles?.forEach((p) => { phoneByUserId[p.user_id] = p.phone; });
+
+      const map: Record<string, string> = {};
+      reqs.forEach((r) => {
+        map[r.id] = phoneByUserId[r.user_id] || "";
       });
+      setUnlockedMap(map);
+    })();
   }, [user]);
 
   const handleUnlock = async (requestId: string) => {
@@ -74,13 +93,23 @@ const HomePage = () => {
       return;
     }
 
-    setUnlockedMap((prev) => ({ ...prev, [requestId]: "unlocked" }));
+    // Fetch the phone for this request
+    const req = requests.find((r) => r.id === requestId);
+    if (req) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("phone")
+        .eq("user_id", req.user_id)
+        .single();
+      setUnlockedMap((prev) => ({ ...prev, [requestId]: profile?.phone || "" }));
+    }
+
     toast.success("Contact unlocked! ₹5 charged (mock)");
   };
 
   const getPhone = (req: any): string | undefined => {
-    if (unlockedMap[req.id] && req.profiles) {
-      return (req.profiles as any).phone;
+    if (unlockedMap[req.id]) {
+      return unlockedMap[req.id] || undefined;
     }
     return undefined;
   };
