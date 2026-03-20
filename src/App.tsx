@@ -31,6 +31,7 @@ const AppRoutes = () => {
 
   return (
     <>
+      {user && <AppHeader />}
       <Routes>
         <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
         <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
@@ -39,7 +40,6 @@ const AppRoutes = () => {
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {user && <AppHeader />}
       {user && <BottomNav />}
     </>
   );
