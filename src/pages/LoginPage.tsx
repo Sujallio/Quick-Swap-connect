@@ -4,48 +4,57 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Smartphone, Shield } from "lucide-react";
+import { Shield, Mail, Lock, User, MapPin } from "lucide-react";
 
 const LoginPage = () => {
+  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [city, setCity] = useState("");
   const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
-  const [step, setStep] = useState<"phone" | "otp">("phone");
   const [loading, setLoading] = useState(false);
 
-  const handleSendOtp = async () => {
-    if (!phone || phone.length < 10) {
-      toast.error("Enter a valid phone number");
+  const handleLogin = async () => {
+    if (!email || !password) {
+      toast.error("Please fill in all fields");
       return;
     }
     setLoading(true);
-    const formattedPhone = phone.startsWith("+91") ? phone : `+91${phone}`;
-    const { error } = await supabase.auth.signInWithOtp({ phone: formattedPhone });
-    setLoading(false);
-    if (error) {
-      toast.error(error.message);
-    } else {
-      setStep("otp");
-      toast.success("OTP sent! (Use 123456 for testing)");
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    if (!otp) {
-      toast.error("Enter the OTP");
-      return;
-    }
-    setLoading(true);
-    const formattedPhone = phone.startsWith("+91") ? phone : `+91${phone}`;
-    const { error } = await supabase.auth.verifyOtp({
-      phone: formattedPhone,
-      token: otp,
-      type: "sms",
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
       toast.error(error.message);
     } else {
       toast.success("Logged in successfully!");
+    }
+  };
+
+  const handleSignup = async () => {
+    if (!email || !password || !name || !city || !phone) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    setLoading(true);
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { name, city, phone } },
+    });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+    } else if (data.user) {
+      // Update profile with name, city, phone
+      await supabase
+        .from("profiles")
+        .update({ name, city, phone })
+        .eq("user_id", data.user.id);
+      toast.success("Account created! You're logged in.");
     }
   };
 
@@ -58,13 +67,28 @@ const LoginPage = () => {
           </div>
           <h1 className="text-2xl font-bold text-foreground">QuickSwap Cash</h1>
           <p className="text-muted-foreground text-sm">
-            Sign in to exchange cash & digital money nearby
+            {mode === "login"
+              ? "Sign in to exchange cash & digital money nearby"
+              : "Create an account to get started"}
           </p>
         </div>
 
         <div className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
-          {step === "phone" ? (
+          {mode === "signup" && (
             <>
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="name"
+                    placeholder="Your name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="h-12 pl-10 text-base"
+                  />
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number</Label>
                 <div className="flex gap-2">
@@ -74,7 +98,7 @@ const LoginPage = () => {
                   <Input
                     id="phone"
                     type="tel"
-                    placeholder="Enter your phone number"
+                    placeholder="10-digit number"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
                     className="h-12 text-base"
@@ -82,48 +106,85 @@ const LoginPage = () => {
                   />
                 </div>
               </div>
-              <Button
-                onClick={handleSendOtp}
-                disabled={loading || phone.length < 10}
-                className="w-full h-12 text-base font-semibold"
-              >
-                <Smartphone className="mr-2 h-4 w-4" />
-                {loading ? "Sending..." : "Send OTP"}
-              </Button>
-            </>
-          ) : (
-            <>
               <div className="space-y-2">
-                <Label htmlFor="otp">Enter OTP</Label>
-                <Input
-                  id="otp"
-                  type="text"
-                  placeholder="Enter 6-digit OTP"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  className="h-12 text-center text-xl tracking-widest"
-                  maxLength={6}
-                />
-                <p className="text-xs text-muted-foreground text-center">
-                  OTP sent to +91{phone}
-                </p>
+                <Label htmlFor="city">City</Label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="city"
+                    placeholder="Your city"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className="h-12 pl-10 text-base"
+                  />
+                </div>
               </div>
-              <Button
-                onClick={handleVerifyOtp}
-                disabled={loading || otp.length < 6}
-                className="w-full h-12 text-base font-semibold"
-              >
-                {loading ? "Verifying..." : "Verify OTP"}
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => { setStep("phone"); setOtp(""); }}
-                className="w-full"
-              >
-                Change phone number
-              </Button>
             </>
           )}
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-12 pl-10 text-base"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="password"
+                type="password"
+                placeholder={mode === "signup" ? "Min 6 characters" : "Your password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="h-12 pl-10 text-base"
+              />
+            </div>
+          </div>
+
+          <Button
+            onClick={mode === "login" ? handleLogin : handleSignup}
+            disabled={loading}
+            className="w-full h-12 text-base font-semibold"
+          >
+            {loading
+              ? mode === "login" ? "Signing in..." : "Creating account..."
+              : mode === "login" ? "Sign In" : "Create Account"}
+          </Button>
+
+          <div className="text-center text-sm text-muted-foreground">
+            {mode === "login" ? (
+              <p>
+                Don't have an account?{" "}
+                <button
+                  onClick={() => setMode("signup")}
+                  className="text-primary font-medium hover:underline"
+                >
+                  Sign up
+                </button>
+              </p>
+            ) : (
+              <p>
+                Already have an account?{" "}
+                <button
+                  onClick={() => setMode("login")}
+                  className="text-primary font-medium hover:underline"
+                >
+                  Sign in
+                </button>
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>
