@@ -93,13 +93,23 @@ const HomePage = () => {
       return;
     }
 
-    setUnlockedMap((prev) => ({ ...prev, [requestId]: "unlocked" }));
+    // Fetch the phone for this request
+    const req = requests.find((r) => r.id === requestId);
+    if (req) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("phone")
+        .eq("user_id", req.user_id)
+        .single();
+      setUnlockedMap((prev) => ({ ...prev, [requestId]: profile?.phone || "" }));
+    }
+
     toast.success("Contact unlocked! ₹5 charged (mock)");
   };
 
   const getPhone = (req: any): string | undefined => {
-    if (unlockedMap[req.id] && req.profiles) {
-      return (req.profiles as any).phone;
+    if (unlockedMap[req.id]) {
+      return unlockedMap[req.id] || undefined;
     }
     return undefined;
   };
