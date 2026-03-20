@@ -33,20 +33,39 @@ const HomePage = () => {
     },
   });
 
-  // Fetch user's unlocks
+  // Fetch user's unlocks and the phone numbers for unlocked requests
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("unlocks")
-      .select("request_id")
-      .eq("viewer_id", user.id)
-      .then(({ data }) => {
-        if (data) {
-          const map: Record<string, string> = {};
-          data.forEach((u) => { map[u.request_id] = "unlocked"; });
-          setUnlockedMap(map);
-        }
+    (async () => {
+      const { data: unlocks } = await supabase
+        .from("unlocks")
+        .select("request_id")
+        .eq("viewer_id", user.id);
+      if (!unlocks || unlocks.length === 0) return;
+
+      const requestIds = unlocks.map((u) => u.request_id);
+      // Get user_ids for those requests
+      const { data: reqs } = await supabase
+        .from("requests")
+        .select("id, user_id")
+        .in("id", requestIds);
+      if (!reqs) return;
+
+      const userIds = [...new Set(reqs.map((r) => r.user_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, phone")
+        .in("user_id", userIds);
+
+      const phoneByUserId: Record<string, string> = {};
+      profiles?.forEach((p) => { phoneByUserId[p.user_id] = p.phone; });
+
+      const map: Record<string, string> = {};
+      reqs.forEach((r) => {
+        map[r.id] = phoneByUserId[r.user_id] || "";
       });
+      setUnlockedMap(map);
+    })();
   }, [user]);
 
   const handleUnlock = async (requestId: string) => {
