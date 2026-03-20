@@ -39,6 +39,7 @@ const AppRoutes = () => {
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      {user && <AppHeader />}
       {user && <BottomNav />}
     </>
   );
