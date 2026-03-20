@@ -20,7 +20,7 @@ const HomePage = () => {
     queryFn: async () => {
       let q = supabase
         .from("requests")
-        .select("*, profiles!requests_user_id_fkey(phone)")
+        .select("*")
         .eq("status", "active")
         .order("created_at", { ascending: false });
 
