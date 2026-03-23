@@ -167,7 +167,7 @@ const CreateRequestPage = () => {
 
         <Button onClick={handleSubmit} disabled={loading} className="w-full h-12 text-base font-semibold">
           <Send className="mr-2 h-4 w-4" />
-          {loading ? "Posting..." : "Post Request · ₹5"}
+          {loading ? "Posting..." : `Post Request · ₹${form.amount ? getPostingFee(parseInt(form.amount) || 0) : 5}`}
         </Button>
       </div>
     </div>
