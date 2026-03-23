@@ -132,6 +132,23 @@ const LoginPage = () => {
             </div>
           </div>
 
+          {mode === "signup" && (
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="Re-enter password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="h-12 pl-10 text-base"
+                />
+              </div>
+            </div>
+          )}
+
           <Button
             onClick={mode === "login" ? handleLogin : handleSignup}
             disabled={loading}
