@@ -36,6 +36,7 @@ const CreateRequestPage = () => {
       return;
     }
 
+    const postingFee = getPostingFee(amount);
     setLoading(true);
 
     // Check daily limit
@@ -47,7 +48,7 @@ const CreateRequestPage = () => {
     }
 
     // Mock payment
-    toast.info("Processing posting fee ₹5 (mock)...");
+    toast.info(`Processing posting fee ₹${postingFee} (mock)...`);
     await new Promise((r) => setTimeout(r, 1000));
 
     const { error } = await supabase.from("requests").insert({
