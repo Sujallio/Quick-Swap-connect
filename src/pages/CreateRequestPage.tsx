@@ -10,6 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Send } from "lucide-react";
 
+const getPostingFee = (amount: number): number => {
+  if (amount <= 1000) return 5;
+  if (amount <= 5000) return 10;
+  if (amount <= 10000) return 15;
+  if (amount <= 25000) return 20;
+  if (amount <= 50000) return 25;
+  return 30;
+};
+
 const CreateRequestPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -36,6 +45,7 @@ const CreateRequestPage = () => {
       return;
     }
 
+    const postingFee = getPostingFee(amount);
     setLoading(true);
 
     // Check daily limit
@@ -47,7 +57,7 @@ const CreateRequestPage = () => {
     }
 
     // Mock payment
-    toast.info("Processing posting fee ₹5 (mock)...");
+    toast.info(`Processing posting fee ₹${postingFee} (mock)...`);
     await new Promise((r) => setTimeout(r, 1000));
 
     const { error } = await supabase.from("requests").insert({
@@ -74,7 +84,9 @@ const CreateRequestPage = () => {
   return (
     <div className="pb-24 pt-4 px-4">
       <h1 className="text-xl font-bold text-foreground mb-1">Post a Request</h1>
-      <p className="text-sm text-muted-foreground mb-6">A posting fee of ₹5 applies (mock)</p>
+      <p className="text-sm text-muted-foreground mb-6">
+        Posting fee: ₹5–₹30 based on amount (mock)
+      </p>
 
       <div className="space-y-4">
         <div className="space-y-2">
@@ -155,7 +167,7 @@ const CreateRequestPage = () => {
 
         <Button onClick={handleSubmit} disabled={loading} className="w-full h-12 text-base font-semibold">
           <Send className="mr-2 h-4 w-4" />
-          {loading ? "Posting..." : "Post Request · ₹5"}
+          {loading ? "Posting..." : `Post Request · ₹${form.amount ? getPostingFee(parseInt(form.amount) || 0) : 5}`}
         </Button>
       </div>
     </div>
