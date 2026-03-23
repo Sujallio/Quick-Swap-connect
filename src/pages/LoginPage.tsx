@@ -83,19 +83,6 @@ const LoginPage = () => {
           {mode === "signup" && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="name"
-                    placeholder="Your name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="h-12 pl-10 text-base"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number</Label>
                 <div className="flex gap-2">
                   <div className="flex h-12 items-center rounded-lg border bg-muted px-3 text-sm font-medium text-muted-foreground">
@@ -109,19 +96,6 @@ const LoginPage = () => {
                     onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
                     className="h-12 text-base"
                     maxLength={10}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="city"
-                    placeholder="Your city"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="h-12 pl-10 text-base"
                   />
                 </div>
               </div>
