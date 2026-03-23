@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Shield, Mail, Lock, User, MapPin } from "lucide-react";
+import { Shield, Mail, Lock, Phone } from "lucide-react";
 
 const LoginPage = () => {
   const [mode, setMode] = useState<"login" | "signup">("login");
