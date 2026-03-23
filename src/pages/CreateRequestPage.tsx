@@ -10,6 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Send } from "lucide-react";
 
+const getPostingFee = (amount: number): number => {
+  if (amount <= 1000) return 5;
+  if (amount <= 5000) return 10;
+  if (amount <= 10000) return 15;
+  if (amount <= 25000) return 20;
+  if (amount <= 50000) return 25;
+  return 30;
+};
+
 const CreateRequestPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
