@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, PlusCircle, List, User } from "lucide-react";
+import { Home, PlusCircle, List, User, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -7,6 +7,7 @@ const navItems = [
   { to: "/post", icon: PlusCircle, label: "Post" },
   { to: "/my-requests", icon: List, label: "My Swaps" },
   { to: "/profile", icon: User, label: "Profile" },
+  { to: "/about", icon: Info, label: "About" },
 ];
 
 const BottomNav = () => {

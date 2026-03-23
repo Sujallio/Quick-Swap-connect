@@ -4,14 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Shield, Mail, Lock, User, MapPin } from "lucide-react";
+import { Shield, Mail, Lock, Phone } from "lucide-react";
 
 const LoginPage = () => {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [city, setCity] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -31,7 +30,7 @@ const LoginPage = () => {
   };
 
   const handleSignup = async () => {
-    if (!email || !password || !name || !city || !phone) {
+    if (!email || !password || !confirmPassword || !phone) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -39,22 +38,29 @@ const LoginPage = () => {
       toast.error("Password must be at least 6 characters");
       return;
     }
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    if (phone.length !== 10) {
+      toast.error("Please enter a valid 10-digit phone number");
+      return;
+    }
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name, city, phone } },
+      options: { data: { phone } },
     });
     setLoading(false);
     if (error) {
       toast.error(error.message);
     } else if (data.user) {
-      // Update profile with name, city, phone
       await supabase
         .from("profiles")
-        .update({ name, city, phone })
+        .update({ phone })
         .eq("user_id", data.user.id);
-      toast.success("Account created! You're logged in.");
+      toast.success("Account created! Please complete your profile.");
     }
   };
 
@@ -77,19 +83,6 @@ const LoginPage = () => {
           {mode === "signup" && (
             <>
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="name"
-                    placeholder="Your name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="h-12 pl-10 text-base"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number</Label>
                 <div className="flex gap-2">
                   <div className="flex h-12 items-center rounded-lg border bg-muted px-3 text-sm font-medium text-muted-foreground">
@@ -103,19 +96,6 @@ const LoginPage = () => {
                     onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
                     className="h-12 text-base"
                     maxLength={10}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="city"
-                    placeholder="Your city"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="h-12 pl-10 text-base"
                   />
                 </div>
               </div>
@@ -151,6 +131,23 @@ const LoginPage = () => {
               />
             </div>
           </div>
+
+          {mode === "signup" && (
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="Re-enter password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="h-12 pl-10 text-base"
+                />
+              </div>
+            </div>
+          )}
 
           <Button
             onClick={mode === "login" ? handleLogin : handleSignup}

@@ -11,7 +11,11 @@ import LoginPage from "@/pages/LoginPage";
 import CreateRequestPage from "@/pages/CreateRequestPage";
 import MyRequestsPage from "@/pages/MyRequestsPage";
 import ProfilePage from "@/pages/ProfilePage";
+import OnboardingPage from "@/pages/OnboardingPage";
+import AboutPage from "@/pages/AboutPage";
 import NotFound from "@/pages/NotFound";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const queryClient = new QueryClient();
 
@@ -24,9 +28,34 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const AppRoutes = () => {
   const { user, loading } = useAuth();
+  const [onboarded, setOnboarded] = useState<boolean | null>(null);
 
-  if (loading) {
+  useEffect(() => {
+    if (!user) {
+      setOnboarded(null);
+      return;
+    }
+    supabase
+      .from("profiles")
+      .select("name, city")
+      .eq("user_id", user.id)
+      .single()
+      .then(({ data }) => {
+        setOnboarded(!!(data?.name && data?.city));
+      });
+  }, [user]);
+
+  if (loading || (user && onboarded === null)) {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Loading...</div>;
+  }
+
+  // User logged in but hasn't completed onboarding
+  if (user && onboarded === false) {
+    return (
+      <Routes>
+        <Route path="*" element={<OnboardingPage />} />
+      </Routes>
+    );
   }
 
   return (
@@ -38,6 +67,7 @@ const AppRoutes = () => {
         <Route path="/post" element={<ProtectedRoute><CreateRequestPage /></ProtectedRoute>} />
         <Route path="/my-requests" element={<ProtectedRoute><MyRequestsPage /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+        <Route path="/about" element={<ProtectedRoute><AboutPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {user && <BottomNav />}
