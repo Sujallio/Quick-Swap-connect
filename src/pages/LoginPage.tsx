@@ -10,8 +10,7 @@ const LoginPage = () => {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [city, setCity] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -31,7 +30,7 @@ const LoginPage = () => {
   };
 
   const handleSignup = async () => {
-    if (!email || !password || !name || !city || !phone) {
+    if (!email || !password || !confirmPassword || !phone) {
       toast.error("Please fill in all fields");
       return;
     }
@@ -39,22 +38,29 @@ const LoginPage = () => {
       toast.error("Password must be at least 6 characters");
       return;
     }
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    if (phone.length !== 10) {
+      toast.error("Please enter a valid 10-digit phone number");
+      return;
+    }
     setLoading(true);
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name, city, phone } },
+      options: { data: { phone } },
     });
     setLoading(false);
     if (error) {
       toast.error(error.message);
     } else if (data.user) {
-      // Update profile with name, city, phone
       await supabase
         .from("profiles")
-        .update({ name, city, phone })
+        .update({ phone })
         .eq("user_id", data.user.id);
-      toast.success("Account created! You're logged in.");
+      toast.success("Account created! Please complete your profile.");
     }
   };
 
