@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Send } from "lucide-react";
+import { processPayment } from "@/lib/razorpay";
 
 const getPostingFee = (amount: number): number => {
   if (amount <= 1000) return 5;
@@ -56,9 +57,16 @@ const CreateRequestPage = () => {
       return;
     }
 
-    // Mock payment
-    toast.info(`Processing posting fee ₹${postingFee} (mock)...`);
-    await new Promise((r) => setTimeout(r, 1000));
+    // Razorpay payment
+    let paymentId: string;
+    try {
+      const result = await processPayment(postingFee, "posting");
+      paymentId = result.payment_id;
+    } catch (err: any) {
+      toast.error(err.message || "Payment failed");
+      setLoading(false);
+      return;
+    }
 
     const { error } = await supabase.from("requests").insert({
       user_id: user.id,
@@ -69,7 +77,7 @@ const CreateRequestPage = () => {
       location_text: form.locationText.trim(),
       urgency: form.urgency,
       description: form.description.trim(),
-      payment_id: `mock_post_${Date.now()}`,
+      payment_id: paymentId,
     });
 
     setLoading(false);
