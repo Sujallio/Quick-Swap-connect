@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
+import { processPayment } from "@/lib/razorpay";
 
 const HomePage = () => {
   const { user } = useAuth();
