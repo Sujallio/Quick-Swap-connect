@@ -75,14 +75,20 @@ const HomePage = () => {
       return;
     }
 
-    // Mock payment
-    toast.info("Processing mock payment of ₹5...");
-    await new Promise((r) => setTimeout(r, 1000));
+    // Razorpay payment for ₹5 unlock
+    let paymentId: string;
+    try {
+      const result = await processPayment(5, "unlock");
+      paymentId = result.payment_id;
+    } catch (err: any) {
+      toast.error(err.message || "Payment failed");
+      return;
+    }
 
     const { error } = await supabase.from("unlocks").insert({
       request_id: requestId,
       viewer_id: user.id,
-      payment_id: `mock_${Date.now()}`,
+      payment_id: paymentId,
     });
 
     if (error) {
