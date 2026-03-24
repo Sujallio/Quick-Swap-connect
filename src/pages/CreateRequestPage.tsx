@@ -77,7 +77,7 @@ const CreateRequestPage = () => {
       location_text: form.locationText.trim(),
       urgency: form.urgency,
       description: form.description.trim(),
-      payment_id: `mock_post_${Date.now()}`,
+      payment_id: paymentId,
     });
 
     setLoading(false);
