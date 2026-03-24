@@ -57,9 +57,16 @@ const CreateRequestPage = () => {
       return;
     }
 
-    // Mock payment
-    toast.info(`Processing posting fee ₹${postingFee} (mock)...`);
-    await new Promise((r) => setTimeout(r, 1000));
+    // Razorpay payment
+    let paymentId: string;
+    try {
+      const result = await processPayment(postingFee, "posting");
+      paymentId = result.payment_id;
+    } catch (err: any) {
+      toast.error(err.message || "Payment failed");
+      setLoading(false);
+      return;
+    }
 
     const { error } = await supabase.from("requests").insert({
       user_id: user.id,
