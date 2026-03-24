@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Send } from "lucide-react";
+import { processPayment } from "@/lib/razorpay";
 
 const getPostingFee = (amount: number): number => {
   if (amount <= 1000) return 5;
