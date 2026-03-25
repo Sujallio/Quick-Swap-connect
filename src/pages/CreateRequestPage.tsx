@@ -95,6 +95,19 @@ const CreateRequestPage = () => {
       return;
     }
 
+    // Validate city matches GPS location if both are provided
+    if (coords && detectedCity) {
+      const enteredCity = form.city.trim().toLowerCase();
+      const detected = detectedCity.toLowerCase();
+      if (enteredCity !== detected && !detected.includes(enteredCity) && !enteredCity.includes(detected)) {
+        toast.error(`City mismatch! Your GPS location shows "${detectedCity}" but you entered "${form.city.trim()}". Please correct the city or remove the live location.`);
+        return;
+      }
+    }
+      toast.error("Amount must be between ₹100 and ₹1,00,000");
+      return;
+    }
+
     const postingFee = getPostingFee(amount);
     setLoading(true);
 
