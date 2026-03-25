@@ -9,11 +9,32 @@ import { Search, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { processPayment } from "@/lib/razorpay";
 
+const getDistanceKm = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
 const HomePage = () => {
   const { user } = useAuth();
   const [city, setCity] = useState("");
   const [needType, setNeedType] = useState("all");
   const [unlockedMap, setUnlockedMap] = useState<Record<string, string>>({});
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
+
+  // Get user's current location on mount
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => {} // silently fail
+      );
+    }
+  }, []);
 
   // Fetch requests
   const { data: requests = [], isLoading } = useQuery({
@@ -165,23 +186,31 @@ const HomePage = () => {
           </div>
         ) : (
           <div className="space-y-3">
-            {requests.map((req) => (
-              <SwapCard
-                key={req.id}
-                id={req.id}
-                amount={req.amount}
-                needType={req.need_type}
-                haveType={req.have_type}
-                city={req.city}
-                locationText={req.location_text}
-                urgency={req.urgency}
-                createdAt={req.created_at}
-                isUnlocked={!!unlockedMap[req.id]}
-                phone={getPhone(req)}
-                onUnlock={handleUnlock}
-                isOwn={req.user_id === user?.id}
-              />
-            ))}
+            {requests.map((req) => {
+              const reqAny = req as any;
+              let distance: number | undefined;
+              if (userCoords && reqAny.latitude && reqAny.longitude) {
+                distance = getDistanceKm(userCoords.lat, userCoords.lng, reqAny.latitude, reqAny.longitude);
+              }
+              return (
+                <SwapCard
+                  key={req.id}
+                  id={req.id}
+                  amount={req.amount}
+                  needType={req.need_type}
+                  haveType={req.have_type}
+                  city={req.city}
+                  locationText={req.location_text}
+                  urgency={req.urgency}
+                  createdAt={req.created_at}
+                  isUnlocked={!!unlockedMap[req.id]}
+                  phone={getPhone(req)}
+                  onUnlock={handleUnlock}
+                  isOwn={req.user_id === user?.id}
+                  distance={distance}
+                />
+              );
+            })}
           </div>
         )}
       </div>

@@ -16,6 +16,7 @@ interface SwapCardProps {
   phone?: string;
   onUnlock?: (id: string) => void;
   isOwn?: boolean;
+  distance?: number;
 }
 
 const urgencyStyles: Record<string, string> = {
@@ -28,7 +29,7 @@ const typeLabel = (t: string) => (t === "cash" ? "💵 Cash" : "📱 UPI");
 
 const SwapCard = ({
   id, amount, needType, haveType, city, locationText,
-  urgency, createdAt, isUnlocked, phone, onUnlock, isOwn,
+  urgency, createdAt, isUnlocked, phone, onUnlock, isOwn, distance,
 }: SwapCardProps) => {
   return (
     <div className="rounded-xl border bg-card p-4 shadow-sm space-y-3">
@@ -53,6 +54,11 @@ const SwapCard = ({
           <MapPin className="h-3.5 w-3.5" />
           {city}{locationText ? `, ${locationText}` : ""}
         </span>
+        {distance !== undefined && (
+          <span className="flex items-center gap-1 font-medium text-primary">
+            📍 {distance < 1 ? `${Math.round(distance * 1000)}m away` : `${distance.toFixed(1)} km away`}
+          </span>
+        )}
         <span className="flex items-center gap-1">
           <Clock className="h-3.5 w-3.5" />
           {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
