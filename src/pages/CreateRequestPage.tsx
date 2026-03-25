@@ -104,9 +104,6 @@ const CreateRequestPage = () => {
         return;
       }
     }
-      toast.error("Amount must be between ₹100 and ₹1,00,000");
-      return;
-    }
 
     const postingFee = getPostingFee(amount);
     setLoading(true);
