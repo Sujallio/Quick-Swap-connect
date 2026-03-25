@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Send } from "lucide-react";
+import { Send, LocateFixed, Loader2 } from "lucide-react";
 import { processPayment } from "@/lib/razorpay";
 
 const getPostingFee = (amount: number): number => {
@@ -24,6 +24,8 @@ const CreateRequestPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [form, setForm] = useState({
     amount: "",
     needType: "cash",
@@ -33,6 +35,26 @@ const CreateRequestPage = () => {
     urgency: "low",
     description: "",
   });
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocating(false);
+        toast.success("Location captured!");
+      },
+      (err) => {
+        setLocating(false);
+        toast.error(err.message || "Failed to get location");
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
 
   const handleSubmit = async () => {
     if (!user) { toast.error("Please login first"); return; }
@@ -78,7 +100,9 @@ const CreateRequestPage = () => {
       urgency: form.urgency,
       description: form.description.trim(),
       payment_id: paymentId,
-    });
+      latitude: coords?.lat ?? null,
+      longitude: coords?.lng ?? null,
+    } as any);
 
     setLoading(false);
     if (error) {
@@ -149,6 +173,30 @@ const CreateRequestPage = () => {
             onChange={(e) => setForm({ ...form, locationText: e.target.value })}
             className="h-12"
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Live Location (optional)</Label>
+          <Button
+            type="button"
+            variant={coords ? "secondary" : "outline"}
+            className="w-full h-12"
+            onClick={handleGetLocation}
+            disabled={locating}
+          >
+            {locating ? (
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Getting location...</>
+            ) : coords ? (
+              <><LocateFixed className="mr-2 h-4 w-4 text-primary" />Location captured ✓</>
+            ) : (
+              <><LocateFixed className="mr-2 h-4 w-4" />Use My Current Location</>
+            )}
+          </Button>
+          {coords && (
+            <p className="text-xs text-muted-foreground">
+              📍 {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
