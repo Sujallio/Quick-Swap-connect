@@ -37,7 +37,6 @@ serve(async (req) => {
     }
 
     const { amount, purpose } = await req.json();
-    // amount in INR (e.g. 5, 10, 15), purpose: "posting" or "unlock"
 
     if (!amount || amount < 1) {
       return new Response(JSON.stringify({ error: "Invalid amount" }), {
@@ -46,8 +45,20 @@ serve(async (req) => {
       });
     }
 
-    const RAZORPAY_KEY_ID = Deno.env.get("RAZORPAY_KEY_ID")!;
-    const RAZORPAY_KEY_SECRET = Deno.env.get("RAZORPAY_KEY_SECRET")!;
+    const RAZORPAY_KEY_ID = Deno.env.get("RAZORPAY_KEY_ID");
+    const RAZORPAY_KEY_SECRET = Deno.env.get("RAZORPAY_KEY_SECRET");
+
+    console.log("RAZORPAY_KEY_ID present:", !!RAZORPAY_KEY_ID, "length:", RAZORPAY_KEY_ID?.length);
+    console.log("RAZORPAY_KEY_SECRET present:", !!RAZORPAY_KEY_SECRET, "length:", RAZORPAY_KEY_SECRET?.length);
+    // Log first 8 chars of key_id for debugging (safe - it's a publishable key)
+    console.log("RAZORPAY_KEY_ID prefix:", RAZORPAY_KEY_ID?.substring(0, 8));
+
+    if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
+      return new Response(JSON.stringify({ error: "Razorpay keys not configured" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const orderRes = await fetch("https://api.razorpay.com/v1/orders", {
       method: "POST",
@@ -56,13 +67,14 @@ serve(async (req) => {
         Authorization: "Basic " + btoa(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`),
       },
       body: JSON.stringify({
-        amount: amount * 100, // Razorpay expects paise
+        amount: amount * 100,
         currency: "INR",
         notes: { purpose: purpose || "payment" },
       }),
     });
 
     const order = await orderRes.json();
+    console.log("Razorpay response status:", orderRes.status, "body:", JSON.stringify(order));
 
     if (!orderRes.ok) {
       return new Response(JSON.stringify({ error: "Failed to create order", details: order }), {
