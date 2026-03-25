@@ -36,6 +36,8 @@ const CreateRequestPage = () => {
     description: "",
   });
 
+  const [detectedCity, setDetectedCity] = useState<string | null>(null);
+
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
       toast.error("Geolocation is not supported by your browser");
@@ -43,10 +45,35 @@ const CreateRequestPage = () => {
     }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setCoords({ lat, lng });
+
+        // Reverse geocode to detect city
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=en`
+          );
+          const data = await res.json();
+          const city =
+            data?.address?.city ||
+            data?.address?.town ||
+            data?.address?.village ||
+            data?.address?.county ||
+            "";
+          setDetectedCity(city);
+          if (city) {
+            setForm((prev) => ({ ...prev, city: city }));
+            toast.success(`Location captured! Detected city: ${city}`);
+          } else {
+            toast.success("Location captured!");
+          }
+        } catch {
+          toast.success("Location captured!");
+        }
+
         setLocating(false);
-        toast.success("Location captured!");
       },
       (err) => {
         setLocating(false);
