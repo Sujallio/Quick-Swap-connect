@@ -61,7 +61,9 @@ export type Database = {
           description: string | null
           have_type: string
           id: string
+          latitude: number | null
           location_text: string
+          longitude: number | null
           need_type: string
           payment_id: string | null
           status: string
@@ -76,7 +78,9 @@ export type Database = {
           description?: string | null
           have_type: string
           id?: string
+          latitude?: number | null
           location_text?: string
+          longitude?: number | null
           need_type: string
           payment_id?: string | null
           status?: string
@@ -91,7 +95,9 @@ export type Database = {
           description?: string | null
           have_type?: string
           id?: string
+          latitude?: number | null
           location_text?: string
+          longitude?: number | null
           need_type?: string
           payment_id?: string | null
           status?: string
