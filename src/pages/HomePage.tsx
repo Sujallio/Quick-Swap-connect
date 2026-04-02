@@ -207,6 +207,7 @@ const HomePage = () => {
                   phone={getPhone(req)}
                   onUnlock={handleUnlock}
                   isOwn={req.user_id === user?.id}
+                  userId={req.user_id}
                   distance={distance}
                 />
               );
