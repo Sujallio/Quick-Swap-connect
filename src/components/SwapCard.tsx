@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { MapPin, Clock, ArrowRight, Lock, MessageCircle } from "lucide-react";
+import { MapPin, Clock, ArrowRight, Lock, MessageCircle, Star, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import RatingDialog from "@/components/RatingDialog";
+import ReportDialog from "@/components/ReportDialog";
 
 interface SwapCardProps {
   id: string;
@@ -17,6 +20,7 @@ interface SwapCardProps {
   onUnlock?: (id: string) => void;
   isOwn?: boolean;
   distance?: number;
+  userId?: string;
 }
 
 const urgencyStyles: Record<string, string> = {
@@ -29,69 +33,92 @@ const typeLabel = (t: string) => (t === "cash" ? "💵 Cash" : "📱 UPI");
 
 const SwapCard = ({
   id, amount, needType, haveType, city, locationText,
-  urgency, createdAt, isUnlocked, phone, onUnlock, isOwn, distance,
+  urgency, createdAt, isUnlocked, phone, onUnlock, isOwn, distance, userId,
 }: SwapCardProps) => {
+  const [showRating, setShowRating] = useState(false);
+  const [showReport, setShowReport] = useState(false);
+
   return (
-    <div className="rounded-xl border bg-card p-4 shadow-sm space-y-3">
-      {/* Top row */}
-      <div className="flex items-start justify-between">
-        <span className="text-2xl font-bold text-foreground">₹{amount.toLocaleString("en-IN")}</span>
-        <span className={cn("rounded-full border px-2.5 py-0.5 text-xs font-semibold capitalize", urgencyStyles[urgency] || urgencyStyles.low)}>
-          {urgency} urgency
-        </span>
-      </div>
-
-      {/* Transfer visualizer */}
-      <div className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2.5">
-        <span className="text-sm font-medium">Need {typeLabel(needType)}</span>
-        <ArrowRight className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm font-medium">Have {typeLabel(haveType)}</span>
-      </div>
-
-      {/* Meta */}
-      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1">
-          <MapPin className="h-3.5 w-3.5" />
-          {city}{locationText ? `, ${locationText}` : ""}
-        </span>
-        {distance !== undefined && (
-          <span className="flex items-center gap-1 font-medium text-primary">
-            📍 {distance < 1 ? `${Math.round(distance * 1000)}m away` : `${distance.toFixed(1)} km away`}
+    <>
+      <div className="rounded-xl border bg-card p-4 shadow-sm space-y-3">
+        {/* Top row */}
+        <div className="flex items-start justify-between">
+          <span className="text-2xl font-bold text-foreground">₹{amount.toLocaleString("en-IN")}</span>
+          <span className={cn("rounded-full border px-2.5 py-0.5 text-xs font-semibold capitalize", urgencyStyles[urgency] || urgencyStyles.low)}>
+            {urgency} urgency
           </span>
+        </div>
+
+        {/* Transfer visualizer */}
+        <div className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2.5">
+          <span className="text-sm font-medium">Need {typeLabel(needType)}</span>
+          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium">Have {typeLabel(haveType)}</span>
+        </div>
+
+        {/* Meta */}
+        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <MapPin className="h-3.5 w-3.5" />
+            {city}{locationText ? `, ${locationText}` : ""}
+          </span>
+          {distance !== undefined && (
+            <span className="flex items-center gap-1 font-medium text-primary">
+              📍 {distance < 1 ? `${Math.round(distance * 1000)}m away` : `${distance.toFixed(1)} km away`}
+            </span>
+          )}
+          <span className="flex items-center gap-1">
+            <Clock className="h-3.5 w-3.5" />
+            {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
+          </span>
+        </div>
+
+        {/* CTA */}
+        {!isOwn && (
+          isUnlocked && phone ? (
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <a
+                  href={`https://wa.me/91${phone.replace(/\D/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1"
+                >
+                  <Button className="w-full" size="sm">
+                    <MessageCircle className="mr-1.5 h-4 w-4" />
+                    Chat on WhatsApp
+                  </Button>
+                </a>
+                <div className="flex items-center rounded-lg bg-muted px-3 text-sm font-medium">
+                  📞 {phone}
+                </div>
+              </div>
+              {/* Rate & Report buttons */}
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={() => setShowRating(true)}>
+                  <Star className="mr-1 h-3.5 w-3.5" />Rate Exchange
+                </Button>
+                <Button variant="ghost" size="sm" className="text-xs text-destructive hover:text-destructive" onClick={() => setShowReport(true)}>
+                  <Flag className="mr-1 h-3.5 w-3.5" />Report
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button variant="unlock" className="w-full" size="sm" onClick={() => onUnlock?.(id)}>
+              <Lock className="mr-1.5 h-4 w-4" />
+              Unlock Contact · ₹5
+            </Button>
+          )
         )}
-        <span className="flex items-center gap-1">
-          <Clock className="h-3.5 w-3.5" />
-          {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
-        </span>
       </div>
 
-      {/* CTA */}
-      {!isOwn && (
-        isUnlocked && phone ? (
-          <div className="flex gap-2">
-            <a
-              href={`https://wa.me/91${phone.replace(/\D/g, "")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1"
-            >
-              <Button className="w-full" size="sm">
-                <MessageCircle className="mr-1.5 h-4 w-4" />
-                Chat on WhatsApp
-              </Button>
-            </a>
-            <div className="flex items-center rounded-lg bg-muted px-3 text-sm font-medium">
-              📞 {phone}
-            </div>
-          </div>
-        ) : (
-          <Button variant="unlock" className="w-full" size="sm" onClick={() => onUnlock?.(id)}>
-            <Lock className="mr-1.5 h-4 w-4" />
-            Unlock Contact · ₹5
-          </Button>
-        )
+      {showRating && userId && (
+        <RatingDialog requestId={id} ratedUserId={userId} onClose={() => setShowRating(false)} />
       )}
-    </div>
+      {showReport && userId && (
+        <ReportDialog requestId={id} reportedUserId={userId} onClose={() => setShowReport(false)} />
+      )}
+    </>
   );
 };
 
