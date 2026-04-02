@@ -53,6 +53,79 @@ export type Database = {
         }
         Relationships: []
       }
+      ratings: {
+        Row: {
+          created_at: string
+          id: string
+          rated_user_id: string
+          rater_id: string
+          request_id: string
+          score: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          rated_user_id: string
+          rater_id: string
+          request_id: string
+          score: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          rated_user_id?: string
+          rater_id?: string
+          request_id?: string
+          score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ratings_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reports: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string
+          reported_user_id: string
+          reporter_id: string
+          request_id: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason?: string
+          reported_user_id: string
+          reporter_id: string
+          request_id?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string
+          reported_user_id?: string
+          reporter_id?: string
+          request_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       requests: {
         Row: {
           amount: number
@@ -166,6 +239,7 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: boolean
       }
+      expire_old_requests: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
