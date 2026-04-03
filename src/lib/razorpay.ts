@@ -1,10 +1,89 @@
+import { supabase } from "@/integrations/supabase/client";
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 interface PaymentResult {
   payment_id: string;
 }
 
+function loadRazorpayScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (window.Razorpay) {
+      resolve();
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load Razorpay SDK"));
+    document.head.appendChild(script);
+  });
+}
+
 export async function processPayment(amountINR: number, purpose: string): Promise<PaymentResult> {
-  // Mock payment: simulate a short delay and return a fake payment ID
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  const mockId = `mock_pay_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  return { payment_id: mockId };
+  await loadRazorpayScript();
+
+  // Get current session token
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("Please login first");
+
+  // Create order via edge function
+  const { data: orderData, error: orderError } = await supabase.functions.invoke(
+    "create-razorpay-order",
+    { body: { amount: amountINR, purpose } }
+  );
+
+  if (orderError || !orderData?.order_id) {
+    throw new Error(orderData?.error || orderError?.message || "Failed to create payment order");
+  }
+
+  // Open Razorpay checkout
+  return new Promise<PaymentResult>((resolve, reject) => {
+    const options = {
+      key: orderData.key_id,
+      amount: orderData.amount,
+      currency: "INR",
+      name: "QuickSwap Cash",
+      description: purpose === "posting" ? "Request Posting Fee" : "Contact Unlock Fee",
+      order_id: orderData.order_id,
+      handler: async (response: any) => {
+        try {
+          // Verify payment via edge function
+          const { data: verifyData, error: verifyError } = await supabase.functions.invoke(
+            "verify-razorpay-payment",
+            {
+              body: {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              },
+            }
+          );
+
+          if (verifyError || !verifyData?.verified) {
+            reject(new Error("Payment verification failed"));
+            return;
+          }
+
+          resolve({ payment_id: response.razorpay_payment_id });
+        } catch (err: any) {
+          reject(new Error(err.message || "Payment verification failed"));
+        }
+      },
+      modal: {
+        ondismiss: () => reject(new Error("Payment cancelled")),
+      },
+      theme: { color: "#16a34a" },
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.on("payment.failed", (response: any) => {
+      reject(new Error(response.error?.description || "Payment failed"));
+    });
+    rzp.open();
+  });
 }

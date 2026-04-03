@@ -27,9 +27,8 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -48,11 +47,6 @@ serve(async (req) => {
     const RAZORPAY_KEY_ID = Deno.env.get("RAZORPAY_KEY_ID");
     const RAZORPAY_KEY_SECRET = Deno.env.get("RAZORPAY_KEY_SECRET");
 
-    console.log("RAZORPAY_KEY_ID present:", !!RAZORPAY_KEY_ID, "length:", RAZORPAY_KEY_ID?.length);
-    console.log("RAZORPAY_KEY_SECRET present:", !!RAZORPAY_KEY_SECRET, "length:", RAZORPAY_KEY_SECRET?.length);
-    // Log first 8 chars of key_id for debugging (safe - it's a publishable key)
-    console.log("RAZORPAY_KEY_ID prefix:", RAZORPAY_KEY_ID?.substring(0, 8));
-
     if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
       return new Response(JSON.stringify({ error: "Razorpay keys not configured" }), {
         status: 500,
@@ -69,14 +63,14 @@ serve(async (req) => {
       body: JSON.stringify({
         amount: amount * 100,
         currency: "INR",
-        notes: { purpose: purpose || "payment" },
+        notes: { purpose: purpose || "payment", user_id: user.id },
       }),
     });
 
     const order = await orderRes.json();
-    console.log("Razorpay response status:", orderRes.status, "body:", JSON.stringify(order));
 
     if (!orderRes.ok) {
+      console.error("Razorpay error:", JSON.stringify(order));
       return new Response(JSON.stringify({ error: "Failed to create order", details: order }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -88,6 +82,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
+    console.error("Edge function error:", err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
