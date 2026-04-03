@@ -154,7 +154,7 @@ const CreateRequestPage = () => {
     <div className="pb-24 pt-4 px-4">
       <h1 className="text-xl font-bold text-foreground mb-1">Post a Request</h1>
       <p className="text-sm text-muted-foreground mb-6">
-        Posting fee: ₹5–₹30 based on amount (mock)
+        Posting fee: ₹5–₹30 based on amount
       </p>
 
       <div className="space-y-4">
