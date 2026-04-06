@@ -112,14 +112,6 @@ const CreateRequestPage = () => {
     const postingFee = getPostingFee(amount);
     setLoading(true);
 
-    // Check daily limit
-    const { data: canPost } = await supabase.rpc("check_daily_request_limit", { p_user_id: user.id });
-    if (!canPost) {
-      toast.error("Daily limit reached (max 5 requests/day)");
-      setLoading(false);
-      return;
-    }
-
     // Razorpay payment
     let paymentId: string;
     try {
