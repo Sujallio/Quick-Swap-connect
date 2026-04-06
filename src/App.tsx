@@ -35,6 +35,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const AppRoutes = () => {
   const { user, loading } = useAuth();
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
+  const [refetchTrigger, setRefetchTrigger] = useState(0);
 
   useEffect(() => {
     if (!user) {
@@ -43,6 +44,9 @@ const AppRoutes = () => {
     }
     const checkOnboarding = async () => {
       try {
+        // Add small delay to ensure database has latest data
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         const { data, error } = await supabase
           .from("profiles")
           .select("name, city")
@@ -55,7 +59,9 @@ const AppRoutes = () => {
           return;
         }
 
-        setOnboarded(!!(data?.name && data?.city));
+        const isOnboarded = !!(data?.name && data?.city);
+        console.log("Onboarding check result:", { data, isOnboarded });
+        setOnboarded(isOnboarded);
       } catch (err) {
         console.error("Error checking onboarding:", err);
         setOnboarded(false);
@@ -63,7 +69,7 @@ const AppRoutes = () => {
     };
 
     checkOnboarding();
-  }, [user]);
+  }, [user, refetchTrigger]);
 
   if (loading || (user && onboarded === null)) {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Loading...</div>;

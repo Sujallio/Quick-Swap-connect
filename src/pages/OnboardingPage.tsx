@@ -20,19 +20,31 @@ const OnboardingPage = () => {
     }
     if (!user) return;
     setLoading(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({ name: name.trim(), city: city.trim() })
-      .eq("user_id", user.id);
-    setLoading(false);
-    if (error) {
-      toast.error("Failed to save profile");
-    } else {
+    
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .upsert(
+          { user_id: user.id, name: name.trim(), city: city.trim() },
+          { onConflict: "user_id" }
+        );
+      
+      if (error) {
+        console.error("Error saving profile:", error);
+        toast.error(`Failed to save profile: ${error.message}`);
+        setLoading(false);
+        return;
+      }
+
       toast.success("Profile complete! Welcome to QuickSwap Cash.");
-      // Wait a moment for database to update, then redirect
+      // Wait for database to update
       setTimeout(() => {
         window.location.href = "/";
-      }, 500);
+      }, 1000);
+    } catch (err: any) {
+      console.error("Exception saving profile:", err);
+      toast.error(err.message || "Failed to save profile");
+      setLoading(false);
     }
   };
 

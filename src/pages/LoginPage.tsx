@@ -50,10 +50,14 @@ const LoginPage = () => {
     if (error) {
       toast.error(error.message);
     } else if (authData.user) {
-      await supabase
-        .from("profiles")
-        .update({ phone: data.phone })
-        .eq("user_id", authData.user.id);
+      // Try to insert or upsert profile
+      try {
+        await supabase
+          .from("profiles")
+          .upsert({ user_id: authData.user.id, phone: data.phone }, { onConflict: "user_id" });
+      } catch (upsertError) {
+        console.error("Error creating profile:", upsertError);
+      }
       toast.success("Account created! Please check your email to verify.");
     }
   };
