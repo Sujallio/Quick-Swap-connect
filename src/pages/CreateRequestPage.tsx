@@ -13,13 +13,15 @@ import { processPayment } from "@/lib/razorpay";
 
 const getPostingFee = (amount: number): number => {
   // Tiered pricing: 100-5000: ₹5, 5001-10000: ₹10, 10001-15000: ₹15, etc.
-  // Formula: 5 + Math.floor((amount - 1) / 5000) * 5
-  const baseCharge = 5;
-  const chargeIncrement = 5;
-  const amountPerTier = 5000;
-  
-  const tier = Math.floor((amount - 1) / amountPerTier);
-  return baseCharge + (tier * chargeIncrement);
+  if (amount <= 0) return 5;
+  if (amount <= 5000) return 5;
+  if (amount <= 10000) return 10;
+  if (amount <= 15000) return 15;
+  if (amount <= 20000) return 20;
+  if (amount <= 25000) return 25;
+  if (amount <= 50000) return 30;
+  if (amount <= 100000) return 50;
+  return 100;
 };
 
 const CreateRequestPage = () => {
