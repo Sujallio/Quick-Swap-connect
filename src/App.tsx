@@ -41,14 +41,28 @@ const AppRoutes = () => {
       setOnboarded(null);
       return;
     }
-    supabase
-      .from("profiles")
-      .select("name, city")
-      .eq("user_id", user.id)
-      .single()
-      .then(({ data }) => {
+    const checkOnboarding = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("name, city")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        
+        if (error) {
+          console.error("Error fetching profile:", error);
+          setOnboarded(false);
+          return;
+        }
+
         setOnboarded(!!(data?.name && data?.city));
-      });
+      } catch (err) {
+        console.error("Error checking onboarding:", err);
+        setOnboarded(false);
+      }
+    };
+
+    checkOnboarding();
   }, [user]);
 
   if (loading || (user && onboarded === null)) {

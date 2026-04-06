@@ -29,8 +29,10 @@ const OnboardingPage = () => {
       toast.error("Failed to save profile");
     } else {
       toast.success("Profile complete! Welcome to QuickSwap Cash.");
-      // Force page reload to re-evaluate onboarding status
-      window.location.href = "/";
+      // Wait a moment for database to update, then redirect
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 500);
     }
   };
 
