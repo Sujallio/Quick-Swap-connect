@@ -108,12 +108,6 @@ npm i -g vercel
 vercel
 ```
 
-#### Netlify
-```bash
-npm i -g netlify-cli
-netlify deploy --prod --dir dist
-```
-
 #### Docker
 ```dockerfile
 FROM node:18-alpine as build

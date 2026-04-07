@@ -68,16 +68,10 @@ npm run build
 
 ### Step 2: Choose Platform
 
-#### Option A: Vercel (Recommended)
+#### Vercel (Recommended)
 ```bash
 npm i -g vercel
 vercel --prod
-```
-
-#### Option B: Netlify
-```bash
-npm i -g netlify-cli
-netlify deploy --prod --dir dist
 ```
 
 #### Option C: Docker
@@ -89,7 +83,7 @@ docker run -p 80:80 quickswap-cash
 ### Step 3: Configure
 - Set environment variables in platform dashboard
 - Configure custom domain
-- Enable HTTPS (automatic on Vercel/Netlify)
+- Enable HTTPS (automatic on Vercel)
 - Set cache headers
 
 ### Step 4: Post-Deployment

@@ -16,7 +16,7 @@ This document outlines security best practices for QuickSwap Cash. All team memb
 ### Always Use
 - ✅ `.env.example` - template for developers
 - ✅ `.env.production.example` - template for production
-- ✅ Platform secrets management (Vercel, Netlify, etc.)
+- ✅ Platform secrets management (Vercel)
 - ✅ Environment variables in CI/CD pipelines
 
 ## Code Security
@@ -113,7 +113,7 @@ CREATE POLICY "Users can create own requests"
 ## HTTPS & Transport
 
 ### Production
-- ✅ HTTPS everywhere (auto on Vercel, Netlify)
+- ✅ HTTPS everywhere (auto on Vercel)
 - ✅ Certificate must be valid (not self-signed)
 - ✅ HSTS headers enabled
 - ✅ No mixed HTTP/HTTPS content
