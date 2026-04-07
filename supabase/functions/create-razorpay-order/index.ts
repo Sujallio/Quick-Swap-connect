@@ -13,9 +13,12 @@ serve(async (req) => {
   }
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    // Get auth header (with or without Bearer prefix)
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.replace("Bearer ", "");
+
+    if (!token) {
+      return new Response(JSON.stringify({ error: "Unauthorized - missing token" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -24,12 +27,20 @@ serve(async (req) => {
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
+      { 
+        global: { 
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            apiKey: Deno.env.get("ANON_KEY"),
+          } 
+        } 
+      }
     );
 
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      console.error("Auth error:", userError?.message);
+      return new Response(JSON.stringify({ error: "Unauthorized - invalid token" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
