@@ -63,7 +63,12 @@ serve(async (req) => {
       body: JSON.stringify({
         amount: amount * 100,
         currency: "INR",
-        notes: { purpose: purpose || "payment", user_id: user.id },
+        receipt: `order_${Date.now()}_${purpose}`,
+        notes: {
+          purpose: purpose || "payment",
+          user_id: user.id,
+          payment_type: "upi",
+        },
       }),
     });
 

@@ -70,6 +70,19 @@ serve(async (req) => {
       });
     }
 
+    // Save payment record to database
+    const { error: dbError } = await supabase.from("payments").insert({
+      user_id: user.id,
+      payment_id: razorpay_payment_id,
+      order_id: razorpay_order_id,
+      payment_method: "upi",
+      status: "verified",
+    });
+
+    if (dbError) {
+      console.error("Failed to save payment record:", dbError);
+    }
+
     return new Response(
       JSON.stringify({ verified: true, payment_id: razorpay_payment_id }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
