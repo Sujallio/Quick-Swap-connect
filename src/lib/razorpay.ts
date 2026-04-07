@@ -43,8 +43,6 @@ export async function processPayment(amountINR: number, purpose: string): Promis
 
   // Open Razorpay checkout with UPI-only payment
   return new Promise<PaymentResult>((resolve, reject) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    
     const options = {
       key: orderData.key_id,
       amount: orderData.amount,
