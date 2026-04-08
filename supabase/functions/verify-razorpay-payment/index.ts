@@ -30,16 +30,6 @@ serve(async (req) => {
   }
 
   try {
-    // Check auth header exists
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      console.error("No authorization header");
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = await req.json();
 
     const RAZORPAY_KEY_SECRET = Deno.env.get("RAZORPAY_KEY_SECRET");
