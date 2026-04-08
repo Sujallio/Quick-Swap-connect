@@ -30,28 +30,10 @@ serve(async (req) => {
   }
 
   try {
+    // Check auth header exists
     const authHeader = req.headers.get("Authorization");
-    const token = authHeader?.replace("Bearer ", "").trim();
-
-    if (!token) {
-      console.error("No auth token provided");
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Create client with the user's token
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("ANON_KEY")!
-    );
-
-    // Set the auth token for this request
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    
-    if (error || !user) {
-      console.error("Auth error:", error?.message);
+    if (!authHeader) {
+      console.error("No authorization header");
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -60,7 +42,15 @@ serve(async (req) => {
 
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = await req.json();
 
-    const RAZORPAY_KEY_SECRET = Deno.env.get("RAZORPAY_KEY_SECRET")!;
+    const RAZORPAY_KEY_SECRET = Deno.env.get("RAZORPAY_KEY_SECRET");
+
+    if (!RAZORPAY_KEY_SECRET) {
+      console.error("Razorpay secret not configured");
+      return new Response(JSON.stringify({ error: "Razorpay secret not configured" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const isValid = await verifySignature(
       razorpay_order_id,
@@ -70,33 +60,28 @@ serve(async (req) => {
     );
 
     if (!isValid) {
+      console.error("Invalid payment signature");
       return new Response(JSON.stringify({ error: "Invalid payment signature" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Save payment record to database
-    const { error: dbError } = await supabase.from("payments").insert({
-      user_id: user.id,
-      payment_id: razorpay_payment_id,
-      order_id: razorpay_order_id,
-      payment_method: "upi",
-      status: "verified",
-    });
-
-    if (dbError) {
-      console.error("Failed to save payment record:", dbError);
-    }
-
     return new Response(
       JSON.stringify({ verified: true, payment_id: razorpay_payment_id }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { 
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      }
     );
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("Edge function error:", err);
+    return new Response(
+      JSON.stringify({ error: err.message || "Internal server error" }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
   }
 });
