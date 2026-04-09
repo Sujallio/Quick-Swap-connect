@@ -49,7 +49,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "QuickSwap Contact <contact@quickswapcash.com>",
+        from: "QuickSwap <onboarding@resend.dev>",
         to: "support.quickswap24@gmail.com",
         reply_to: email,
         subject: `New Contact Form Submission from ${name}`,
@@ -68,9 +68,9 @@ serve(async (req) => {
     const result = await emailRes.json();
 
     if (!emailRes.ok) {
-      console.error("Resend API error:", result);
+      console.error("Resend API error:", JSON.stringify(result));
       return new Response(
-        JSON.stringify({ error: "Failed to send email" }),
+        JSON.stringify({ error: "Failed to send email", details: result }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
