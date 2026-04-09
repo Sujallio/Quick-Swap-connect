@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ArrowLeft, Mail, Send } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import Footer from "@/components/Footer";
 
 const ContactPage = () => {
@@ -18,11 +19,32 @@ const ContactPage = () => {
       return;
     }
     setSending(true);
-    // Simulate sending
-    await new Promise((r) => setTimeout(r, 1000));
-    setSending(false);
-    toast.success("Message sent! We'll get back to you soon.");
-    setForm({ name: "", email: "", message: "" });
+    try {
+      const { data, error } = await supabase.functions.invoke("send-contact-email", {
+        body: {
+          name: form.name.trim(),
+          email: form.email.trim(),
+          message: form.message.trim(),
+        },
+      });
+
+      if (error) {
+        toast.error(error.message || "Failed to send message");
+        setSending(false);
+        return;
+      }
+
+      if (data?.success) {
+        toast.success("Message sent! We'll get back to you soon.");
+        setForm({ name: "", email: "", message: "" });
+      } else {
+        toast.error(data?.error || "Failed to send message");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send message");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
