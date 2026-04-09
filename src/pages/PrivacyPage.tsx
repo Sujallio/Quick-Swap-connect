@@ -30,7 +30,7 @@ const PrivacyPage = () => (
         <p>Your data is retained as long as your account is active. You can request deletion of your account by contacting support.</p>
 
         <h2 className="text-base font-semibold text-foreground">6. Contact</h2>
-        <p>For privacy-related queries, reach us at <a href="mailto:support.quickswap@gmail.com" className="text-primary hover:underline">support.quickswap@gmail.com</a> or <a href="mailto:support@quickswapcash.in" className="text-primary hover:underline">support@quickswapcash.in</a></p>
+        <p>For privacy-related queries, reach us at <a href="mailto:support.quickswap24@gmail.com" className="text-primary hover:underline">support.quickswap24@gmail.com</a> or <a href="mailto:support@quickswapcash.in" className="text-primary hover:underline">support@quickswapcash.in</a></p>
       </div>
     </div>
     <Footer />

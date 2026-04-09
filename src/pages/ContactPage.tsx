@@ -62,8 +62,8 @@ const ContactPage = () => {
           <div className="text-center text-sm text-muted-foreground">
             <p className="mb-2">Or email us directly at</p>
             <div className="space-y-2">
-              <a href="mailto:support.quickswap@gmail.com" className="text-primary font-medium hover:underline block">
-                support.quickswap@gmail.com
+              <a href="mailto:support.quickswap24@gmail.com" className="text-primary font-medium hover:underline block">
+                support.quickswap24@gmail.com
               </a>
               <a href="mailto:support@quickswapcash.in" className="text-primary font-medium hover:underline block text-xs text-muted-foreground">
                 support@quickswapcash.in
