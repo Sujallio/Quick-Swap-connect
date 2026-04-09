@@ -58,9 +58,18 @@ const ContactPage = () => {
           </Button>
         </div>
 
-        <div className="mt-6 text-center text-sm text-muted-foreground">
-          <p>Or email us directly at</p>
-          <a href="mailto:support@quickswapcash.in" className="text-primary font-medium hover:underline">support@quickswapcash.in</a>
+        <div className="mt-6 space-y-3">
+          <div className="text-center text-sm text-muted-foreground">
+            <p className="mb-2">Or email us directly at</p>
+            <div className="space-y-2">
+              <a href="mailto:support.quickswap@gmail.com" className="text-primary font-medium hover:underline block">
+                support.quickswap@gmail.com
+              </a>
+              <a href="mailto:support@quickswapcash.in" className="text-primary font-medium hover:underline block text-xs text-muted-foreground">
+                support@quickswapcash.in
+              </a>
+            </div>
+          </div>
         </div>
       </div>
       <Footer />
