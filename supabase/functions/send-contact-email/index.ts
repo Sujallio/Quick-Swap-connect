@@ -42,30 +42,36 @@ serve(async (req) => {
     }
 
     // Send email using Resend API
+    const emailPayload = {
+      from: "onboarding@resend.dev",
+      to: "support.quickswap24@gmail.com",
+      subject: `New Contact Form Submission from ${name}`,
+      html: `
+        <h2>New Contact Form Submission</h2>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Message:</strong></p>
+        <p>${message.replace(/\n/g, "<br>")}</p>
+        <hr>
+        <p style="color: #666; font-size: 12px;">Reply to: ${email}</p>
+      `,
+    };
+
+    console.log("Sending email with payload:", JSON.stringify(emailPayload));
+    console.log("API Key exists:", !!RESEND_API_KEY);
+
     const emailRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${RESEND_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        from: "QuickSwap <onboarding@resend.dev>",
-        to: "support.quickswap24@gmail.com",
-        reply_to: email,
-        subject: `New Contact Form Submission from ${name}`,
-        html: `
-          <h2>New Contact Form Submission</h2>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Message:</strong></p>
-          <p>${message.replace(/\n/g, "<br>")}</p>
-          <hr>
-          <p style="color: #666; font-size: 12px;">This email was sent from the QuickSwap Contact Form</p>
-        `,
-      }),
+      body: JSON.stringify(emailPayload),
     });
 
     const result = await emailRes.json();
+    console.log("Resend API response status:", emailRes.status);
+    console.log("Resend API response:", JSON.stringify(result));
 
     if (!emailRes.ok) {
       console.error("Resend API error:", JSON.stringify(result));
