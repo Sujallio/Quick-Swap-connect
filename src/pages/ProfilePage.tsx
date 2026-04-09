@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { LogOut, Star, FileText } from "lucide-react";
+import { LogOut, Star, FileText, Mail } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const ProfilePage = () => {
   const { user, signOut } = useAuth();
@@ -89,6 +90,13 @@ const ProfilePage = () => {
         <LogOut className="mr-2 h-4 w-4" />
         Sign Out
       </Button>
+
+      <Link to="/contact" className="block mt-4">
+        <Button variant="outline" className="w-full h-12 font-semibold">
+          <Mail className="mr-2 h-4 w-4" />
+          Contact Support
+        </Button>
+      </Link>
 
       <p className="mt-8 text-center text-xs text-muted-foreground px-4">
         This platform only connects users for cash/digital exchange. All transactions are conducted offline at users' own risk. We are not responsible for any fraud or disputes.
