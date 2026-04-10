@@ -185,7 +185,35 @@ const HomePage = () => {
             <p className="text-sm text-muted-foreground">Try changing your filters or check back later</p>
           </div>
         ) : (
-      </div>
+          <div className="space-y-3">
+            {requests.map((req) => {
+              const reqAny = req as any;
+              let distance: number | undefined;
+              if (userCoords && reqAny.latitude && reqAny.longitude) {
+                distance = getDistanceKm(userCoords.lat, userCoords.lng, reqAny.latitude, reqAny.longitude);
+              }
+              return (
+                <SwapCard
+                  key={req.id}
+                  id={req.id}
+                  amount={req.amount}
+                  needType={req.need_type}
+                  haveType={req.have_type}
+                  city={req.city}
+                  locationText={req.location_text}
+                  urgency={req.urgency}
+                  createdAt={req.created_at}
+                  isUnlocked={!!unlockedMap[req.id]}
+                  phone={getPhone(req)}
+                  onUnlock={handleUnlock}
+                  isOwn={req.user_id === user?.id}
+                  userId={req.user_id}
+                  distance={distance}
+                />
+              );
+            })}
+          </div>
+        )}
     </div>
   );
 };
