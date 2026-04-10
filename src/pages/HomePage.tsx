@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import SwapCard from "@/components/SwapCard";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, Instagram, Linkedin } from "lucide-react";
 import { toast } from "sonner";
 import { processPayment } from "@/lib/razorpay";
 
@@ -214,6 +214,33 @@ const HomePage = () => {
             })}
           </div>
         )}
+
+        {/* Follow Us Section */}
+        <div className="mt-12 pt-8 border-t">
+          <p className="text-center text-sm text-muted-foreground mb-4">Follow us on social media</p>
+          <div className="flex justify-center gap-6">
+            <a
+              href="https://www.instagram.com/quickswap.connect"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-muted transition-colors"
+              title="Follow us on Instagram"
+            >
+              <Instagram className="h-5 w-5 text-pink-600" />
+              <span className="text-sm font-medium">Instagram</span>
+            </a>
+            <a
+              href="https://www.linkedin.com/company/quick-swap-connect/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-muted transition-colors"
+              title="Follow us on LinkedIn"
+            >
+              <Linkedin className="h-5 w-5 text-blue-600" />
+              <span className="text-sm font-medium">LinkedIn</span>
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );
