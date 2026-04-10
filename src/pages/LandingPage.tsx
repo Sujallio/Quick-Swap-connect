@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Shield, Send, Search, Unlock, Handshake, ArrowRight } from "lucide-react";
+import { Shield, Send, Search, Unlock, Handshake, ArrowRight, Instagram, Linkedin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Footer from "@/components/Footer";
 
@@ -71,6 +71,35 @@ const LandingPage = () => (
       <Button asChild className="mt-4 h-12 px-8 font-semibold">
         <Link to="/login">Start Swapping <ArrowRight className="ml-2 h-4 w-4" /></Link>
       </Button>
+    </section>
+
+    {/* Follow Us Section */}
+    <section className="px-4 py-12 border-t">
+      <div className="text-center space-y-4">
+        <p className="text-sm text-muted-foreground">Follow us on social media</p>
+        <div className="flex justify-center gap-6">
+          <a
+            href="https://www.instagram.com/quickswap.connect"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-muted transition-colors"
+            title="Follow us on Instagram"
+          >
+            <Instagram className="h-5 w-5 text-pink-600" />
+            <span className="text-sm font-medium">Instagram</span>
+          </a>
+          <a
+            href="https://www.linkedin.com/company/quick-swap-connect/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-muted transition-colors"
+            title="Follow us on LinkedIn"
+          >
+            <Linkedin className="h-5 w-5 text-blue-600" />
+            <span className="text-sm font-medium">LinkedIn</span>
+          </a>
+        </div>
+      </div>
     </section>
 
     <Footer />

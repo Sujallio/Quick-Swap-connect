@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import SwapCard from "@/components/SwapCard";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, SlidersHorizontal, Instagram, Linkedin } from "lucide-react";
+import { Search, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { processPayment } from "@/lib/razorpay";
 
@@ -185,62 +185,6 @@ const HomePage = () => {
             <p className="text-sm text-muted-foreground">Try changing your filters or check back later</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {requests.map((req) => {
-              const reqAny = req as any;
-              let distance: number | undefined;
-              if (userCoords && reqAny.latitude && reqAny.longitude) {
-                distance = getDistanceKm(userCoords.lat, userCoords.lng, reqAny.latitude, reqAny.longitude);
-              }
-              return (
-                <SwapCard
-                  key={req.id}
-                  id={req.id}
-                  amount={req.amount}
-                  needType={req.need_type}
-                  haveType={req.have_type}
-                  city={req.city}
-                  locationText={req.location_text}
-                  urgency={req.urgency}
-                  createdAt={req.created_at}
-                  isUnlocked={!!unlockedMap[req.id]}
-                  phone={getPhone(req)}
-                  onUnlock={handleUnlock}
-                  isOwn={req.user_id === user?.id}
-                  userId={req.user_id}
-                  distance={distance}
-                />
-              );
-            })}
-          </div>
-        )}
-
-        {/* Follow Us Section */}
-        <div className="mt-12 pt-8 border-t">
-          <p className="text-center text-sm text-muted-foreground mb-4">Follow us on social media</p>
-          <div className="flex justify-center gap-6">
-            <a
-              href="https://www.instagram.com/quickswap.connect"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-muted transition-colors"
-              title="Follow us on Instagram"
-            >
-              <Instagram className="h-5 w-5 text-pink-600" />
-              <span className="text-sm font-medium">Instagram</span>
-            </a>
-            <a
-              href="https://www.linkedin.com/company/quick-swap-connect/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-muted transition-colors"
-              title="Follow us on LinkedIn"
-            >
-              <Linkedin className="h-5 w-5 text-blue-600" />
-              <span className="text-sm font-medium">LinkedIn</span>
-            </a>
-          </div>
-        </div>
       </div>
     </div>
   );
