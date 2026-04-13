@@ -32,9 +32,18 @@ const MyRequestsPage = () => {
   });
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("requests").delete().eq("id", id);
+    if (!user) {
+      toast.error("Please login first");
+      return;
+    }
+    const { error } = await supabase
+      .from("requests")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id);
     if (error) {
       toast.error("Failed to delete");
+      console.error("Delete error:", error);
     } else {
       toast.success("Request deleted");
       queryClient.invalidateQueries({ queryKey: ["my-requests"] });
@@ -43,9 +52,18 @@ const MyRequestsPage = () => {
   };
 
   const handleComplete = async (id: string) => {
-    const { error } = await supabase.from("requests").update({ status: "completed" }).eq("id", id);
+    if (!user) {
+      toast.error("Please login first");
+      return;
+    }
+    const { error } = await supabase
+      .from("requests")
+      .update({ status: "completed" })
+      .eq("id", id)
+      .eq("user_id", user.id);
     if (error) {
       toast.error("Failed to update");
+      console.error("Update error:", error);
     } else {
       toast.success("Marked as completed");
       queryClient.invalidateQueries({ queryKey: ["my-requests"] });
