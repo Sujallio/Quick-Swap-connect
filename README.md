@@ -39,12 +39,12 @@ A modern web application that connects users to exchange cash and digital paymen
 ## 💰 Pricing Model
 
 ### Posting Fee (Tiered)
-- ₹5 per ₹4,000 range
-- ₹100–₹4,000: ₹5
-- ₹4,001–₹8,000: ₹10
-- ₹8,001–₹12,000: ₹15
-- ₹12,001–₹16,000: ₹20
-- *Pattern: 5 × ⌈amount ÷ 4000⌉*
+- ₹5 per ₹5,000 range
+- ₹100–₹5,000: ₹5
+- ₹5,001–₹10,000: ₹10
+- ₹10,001–₹15,000: ₹15
+- ₹15,001–₹20,000: ₹20
+- *Pattern: 5 × ⌈amount ÷ 5000⌉*
 
 ### Contact Unlock Fee
 - ₹5 to reveal helper's phone number

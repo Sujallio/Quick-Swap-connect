@@ -12,10 +12,10 @@ import { Send, LocateFixed, Loader2 } from "lucide-react";
 import { processPayment } from "@/lib/razorpay";
 
 const getPostingFee = (amount: number): number => {
-  // Tiered pricing: ₹5 for every ₹4000 range
-  // ₹100–₹4000: ₹5, ₹4001–₹8000: ₹10, ₹8001–₹12000: ₹15, etc.
+  // Tiered pricing: ₹5 for every ₹5000 range
+  // ₹100–₹5000: ₹5, ₹5001–₹10000: ₹10, ₹10001–₹15000: ₹15, etc.
   if (amount <= 0) return 5;
-  return Math.ceil(amount / 4000) * 5;
+  return Math.ceil(amount / 5000) * 5;
 };
 
 const CreateRequestPage = () => {
@@ -144,7 +144,7 @@ const CreateRequestPage = () => {
     <div className="pb-24 pt-4 px-4">
       <h1 className="text-xl font-bold text-foreground mb-1">Post a Request</h1>
       <p className="text-sm text-muted-foreground mb-6">
-        Posting fee: ₹5 per ₹4000 (₹100–₹4000: ₹5, ₹4001–₹8000: ₹10, etc.)
+        Posting fee: ₹5 per ₹5000 (₹100–₹5000: ₹5, ₹5001–₹10000: ₹10, etc.)
       </p>
 
       <div className="space-y-4">
