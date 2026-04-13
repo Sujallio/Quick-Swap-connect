@@ -24,7 +24,7 @@ const TermsPage = () => (
         <p>Users must provide accurate information during registration. Users must meet in safe, public locations for exchanges. Users must verify transaction details before completing any exchange.</p>
 
         <h2 className="text-base font-semibold text-foreground">4. Fees</h2>
-        <p>The platform charges a non-refundable posting fee based on the amount: ₹5 for ₹100–₹5000, ₹10 for ₹5001–₹10000, ₹15 for ₹10001–₹15000, and so on (₹5 increase per ₹5000). Contact unlock fee is ₹5. These fees are for platform services.</p>
+        <p>The platform charges a non-refundable posting fee based on the amount: ₹5 for every ₹4000 range. Examples: ₹100–₹4000 = ₹5, ₹4001–₹8000 = ₹10, ₹8001–₹12000 = ₹15, and so on. Contact unlock fee is ₹5. These fees are for platform services.</p>
 
         <h2 className="text-base font-semibold text-foreground">5. Account Termination</h2>
         <p>We reserve the right to block or terminate accounts that violate these terms, engage in fraudulent activity, or are reported by other users.</p>
