@@ -65,7 +65,7 @@ ALTER TABLE public.requests ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Active requests viewable by everyone" ON public.requests FOR SELECT USING (true);
 CREATE POLICY "Users can insert own requests" ON public.requests FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can update own requests" ON public.requests FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can update own requests" ON public.requests FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can delete own requests" ON public.requests FOR DELETE USING (auth.uid() = user_id);
 
 CREATE TRIGGER update_requests_updated_at BEFORE UPDATE ON public.requests
