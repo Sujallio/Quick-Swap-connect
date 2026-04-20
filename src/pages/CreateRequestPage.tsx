@@ -136,6 +136,23 @@ const CreateRequestPage = () => {
       toast.error("Failed to create request");
     } else {
       toast.success("Request posted!");
+      
+      // Send email notifications to users in same city (async, non-blocking)
+      supabase.functions
+        .invoke("send-request-notification-emails", {
+          body: {
+            city: form.city.trim(),
+            amount,
+            need_type: form.needType,
+            have_type: form.haveType,
+            requesterId: user.id,
+          },
+        })
+        .catch((err) => {
+          console.error("Failed to send notifications:", err);
+          // Don't show error to user - this is optional
+        });
+      
       navigate("/");
     }
   };
