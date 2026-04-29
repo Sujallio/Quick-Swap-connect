@@ -11,6 +11,7 @@ import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import CreateRequestPage from "@/pages/CreateRequestPage";
+import PaymentPage from "@/pages/PaymentPage";
 import MyRequestsPage from "@/pages/MyRequestsPage";
 import ProfilePage from "@/pages/ProfilePage";
 import OnboardingPage from "@/pages/OnboardingPage";
@@ -107,6 +108,7 @@ const AppRoutes = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Navigate to="/" replace />} />
         <Route path="/post" element={<CreateRequestPage />} />
+        <Route path="/payment" element={<PaymentPage />} />
         <Route path="/my-requests" element={<MyRequestsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/about" element={<AboutPage />} />

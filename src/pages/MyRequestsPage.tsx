@@ -8,7 +8,9 @@ import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 
 const statusStyles: Record<string, string> = {
-  active: "bg-primary/10 text-primary",
+  verified: "bg-primary/10 text-primary",
+  pending_verification: "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
+  rejected: "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200",
   completed: "bg-muted text-muted-foreground",
 };
 
@@ -102,11 +104,19 @@ const MyRequestsPage = () => {
               <div className="text-xs text-muted-foreground">
                 {req.city} · {formatDistanceToNow(new Date(req.created_at), { addSuffix: true })}
               </div>
-              {req.status === "active" && (
+              {req.status === "verified" && (
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={() => handleComplete(req.id)} className="flex-1">
                     Mark Complete
                   </Button>
+                  <Button variant="ghost" size="sm" onClick={() => handleDelete(req.id)} className="text-destructive hover:text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+              {req.status === "pending_verification" && (
+                <div className="flex gap-2">
+                  <p className="text-xs text-muted-foreground flex-1">⏳ Awaiting admin verification</p>
                   <Button variant="ghost" size="sm" onClick={() => handleDelete(req.id)} className="text-destructive hover:text-destructive">
                     <Trash2 className="h-4 w-4" />
                   </Button>

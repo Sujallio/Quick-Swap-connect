@@ -43,7 +43,7 @@ const HomePage = () => {
       let q = supabase
         .from("requests")
         .select("*")
-        .eq("status", "active")
+        .eq("status", "verified")
         .order("created_at", { ascending: false });
 
       if (city) q = q.ilike("city", `%${city}%`);

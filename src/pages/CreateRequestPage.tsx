@@ -9,7 +9,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Send, LocateFixed, Loader2 } from "lucide-react";
-import { processPayment } from "@/lib/razorpay";
 
 const getPostingFee = (amount: number): number => {
   // Tiered pricing: ₹5 for every ₹5000 range
@@ -103,58 +102,26 @@ const CreateRequestPage = () => {
       }
     }
 
-    const postingFee = getPostingFee(amount);
     setLoading(true);
 
-    // Razorpay payment
-    let paymentId: string;
-    try {
-      const result = await processPayment(postingFee, "posting");
-      paymentId = result.payment_id;
-    } catch (err: any) {
-      toast.error(err.message || "Payment failed");
-      setLoading(false);
-      return;
-    }
-
-    const { error } = await supabase.from("requests").insert({
-      user_id: user.id,
-      amount,
-      need_type: form.needType,
-      have_type: form.haveType,
-      city: form.city.trim(),
-      location_text: form.locationText.trim(),
-      urgency: form.urgency,
-      description: form.description.trim(),
-      payment_id: paymentId,
-      latitude: coords?.lat ?? null,
-      longitude: coords?.lng ?? null,
-    } as any);
+    // Pass form data to PaymentPage
+    navigate("/payment", {
+      state: {
+        requestData: {
+          amount,
+          needType: form.needType,
+          haveType: form.haveType,
+          city: form.city.trim(),
+          locationText: form.locationText.trim(),
+          urgency: form.urgency,
+          description: form.description.trim(),
+          lat: coords?.lat,
+          lng: coords?.lng,
+        },
+      },
+    });
 
     setLoading(false);
-    if (error) {
-      toast.error("Failed to create request");
-    } else {
-      toast.success("Request posted!");
-      
-      // Send email notifications to users in same city (async, non-blocking)
-      supabase.functions
-        .invoke("send-request-notification-emails", {
-          body: {
-            city: form.city.trim(),
-            amount,
-            need_type: form.needType,
-            have_type: form.haveType,
-            requesterId: user.id,
-          },
-        })
-        .catch((err) => {
-          console.error("Failed to send notifications:", err);
-          // Don't show error to user - this is optional
-        });
-      
-      navigate("/");
-    }
   };
 
   return (
