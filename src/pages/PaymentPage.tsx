@@ -171,7 +171,8 @@ const PaymentPage = () => {
     return Math.ceil(amount / 5000) * 5;
   };
 
-  const totalAmount = requestData.amount + getPostingFee(requestData.amount);
+  // Users only pay the posting fee, not the request amount
+  const totalAmount = getPostingFee(requestData.amount);
 
   return (
     <div className="pb-24 pt-4 px-4">
@@ -196,12 +197,15 @@ const PaymentPage = () => {
               <span className="text-sm text-muted-foreground">Request Amount</span>
               <span className="text-lg font-bold text-primary">₹{requestData.amount}</span>
             </div>
+            <p className="text-xs text-muted-foreground px-3">
+              💡 This is what you want to exchange with someone, not what you pay.
+            </p>
             <div className="flex justify-between items-center p-3 bg-secondary/20 rounded-lg">
               <span className="text-sm text-muted-foreground">Posting Fee</span>
               <span className="text-sm font-semibold">₹{getPostingFee(requestData.amount)}</span>
             </div>
             <div className="border-t pt-3 flex justify-between items-center">
-              <span className="text-sm font-semibold text-foreground">Total to Pay</span>
+              <span className="text-sm font-semibold text-foreground">💳 You Pay</span>
               <span className="text-2xl font-bold text-primary">₹{totalAmount}</span>
             </div>
           </CardContent>
