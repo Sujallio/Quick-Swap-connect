@@ -10,9 +10,13 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { ArrowLeft, CheckCircle2, AlertCircle, Upload } from "lucide-react";
 
-// Static UPI QR image - you can replace with your actual QR code
-const UPI_QR_IMAGE = "https://via.placeholder.com/300x300?text=UPI+QR+Code";
-const UPI_ID = "yourname@upi"; // Update with your actual UPI ID
+// Static UPI QR image - Replace with your actual QR code image URL
+// You can generate QR codes at: https://www.qr-code-generator.com/
+// Upload the QR image to Supabase Storage and use the public URL
+const UPI_QR_IMAGE = "https://via.placeholder.com/300x300?text=UPI+QR+Code+Here";
+
+// Update this with your actual UPI ID (e.g., "yourname@okhdfcbank" or "yourname@upi")
+const UPI_ID = "admin@upi";
 
 interface RequestData {
   amount: number;
