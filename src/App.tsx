@@ -16,7 +16,6 @@ import MyRequestsPage from "@/pages/MyRequestsPage";
 import ProfilePage from "@/pages/ProfilePage";
 import OnboardingPage from "@/pages/OnboardingPage";
 import AboutPage from "@/pages/AboutPage";
-import AdminPage from "@/pages/AdminPage";
 import TermsPage from "@/pages/TermsPage";
 import PrivacyPage from "@/pages/PrivacyPage";
 import ContactPage from "@/pages/ContactPage";
@@ -115,7 +114,6 @@ const AppRoutes = () => {
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/contact" element={<ContactPage />} />
-        <Route path="/admin" element={<AdminPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <BottomNav />

@@ -149,14 +149,6 @@ WHERE status = 'active';
 6. Request saved with `status = 'pending_verification'`
 7. Emails sent to users in same city (async)
 
-### Admin Panel Updates:
-- New **"Pending"** tab shows unverified payments
-- Admin can see:
-  - Amount & request type
-  - Transaction ID
-  - Payment screenshot (if provided)
-- Buttons: **Verify** (approve) or **Reject** (decline)
-
 ### UPI QR Settings:
 Update the UPI details in `src/pages/PaymentPage.tsx`:
 ```typescript
@@ -182,10 +174,8 @@ If you see `"permission denied"`:
 3. ✅ Test the complete flow:
    - Create a test request
    - Enter fake transaction ID (e.g., "TXN123456789")
-   - Check it appears in admin panel as pending
-   - Approve it as admin
-   - Verify it now shows publicly
+   - Verify the request is created with pending_verification status
 
 ---
 
-**Need help?** Check the [PaymentPage.tsx](../src/pages/PaymentPage.tsx) and [AdminPage.tsx](../src/pages/AdminPage.tsx) for implementation details.
+**Need help?** Check the [PaymentPage.tsx](../src/pages/PaymentPage.tsx) for implementation details.
