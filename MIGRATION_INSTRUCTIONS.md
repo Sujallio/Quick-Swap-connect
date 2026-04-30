@@ -8,16 +8,16 @@ This application uses **Razorpay Standard Checkout** for secure payment processi
 
 ### 1.1 Get Your Credentials
 Your Razorpay credentials are already configured:
-- **KEY_ID**: `rzp_test_SjeoufP8HM4txO`
-- **KEY_SECRET**: `rEBqnJRU4rWltdHs2FYGYB1b`
+- **KEY_ID**: `rzp_test_SjjIkGtcKKtyaj`
+- **KEY_SECRET**: `RE0pmmtlL9g7SyRtuQavQuyu`
 
 ### 1.2 Add to Supabase Environment Variables
 1. Go to: https://app.supabase.com/
 2. Select your project: `Quick-Swap-connect`
 3. Click **Settings** → **Vault** (or **Environment Variables**)
 4. Create two secrets:
-   - `RAZORPAY_KEY_ID` = `rzp_test_SjeoufP8HM4txO`
-   - `RAZORPAY_KEY_SECRET` = `rEBqnJRU4rWltdHs2FYGYB1b`
+   - `RAZORPAY_KEY_ID` = `rzp_test_SjjIkGtcKKtyaj`
+   - `RAZORPAY_KEY_SECRET` = `RE0pmmtlL9g7SyRtuQavQuyu`
 5. Click **Add** for each
 
 ---
@@ -72,7 +72,7 @@ CREATE INDEX IF NOT EXISTS idx_requests_payment_method ON public.requests(paymen
 Confirm the file `c:\Users\sujal\Desktop\QuickSwap\quick-cash-connect\.env.local` contains:
 
 ```
-VITE_RAZORPAY_KEY_ID=rzp_test_SjeoufP8HM4txO
+VITE_RAZORPAY_KEY_ID=rzp_test_SjjIkGtcKKtyaj
 ```
 
 ⚠️ **IMPORTANT**: The `RAZORPAY_KEY_SECRET` is ONLY in Supabase and never in the frontend.
