@@ -7,17 +7,19 @@ This application uses **Razorpay Standard Checkout** for secure payment processi
 ## Step 1: Set Razorpay Credentials in Supabase
 
 ### 1.1 Get Your Credentials
-Your Razorpay credentials are already configured:
-- **KEY_ID**: `rzp_test_SjjIkGtcKKtyaj`
-- **KEY_SECRET**: `RE0pmmtlL9g7SyRtuQavQuyu`
+Your Razorpay credentials are now configured for LIVE mode:
+- **KEY_ID**: `rzp_live_Sjjz2UOhKOizyg`
+- **KEY_SECRET**: `mC0mYFUEn45W5E1GpanoaXlC`
+
+⚠️ **IMPORTANT: These are LIVE credentials - real money will be charged!**
 
 ### 1.2 Add to Supabase Environment Variables
 1. Go to: https://app.supabase.com/
 2. Select your project: `Quick-Swap-connect`
 3. Click **Settings** → **Vault** (or **Environment Variables**)
 4. Create two secrets:
-   - `RAZORPAY_KEY_ID` = `rzp_test_SjjIkGtcKKtyaj`
-   - `RAZORPAY_KEY_SECRET` = `RE0pmmtlL9g7SyRtuQavQuyu`
+   - `RAZORPAY_KEY_ID` = `rzp_live_Sjjz2UOhKOizyg`
+   - `RAZORPAY_KEY_SECRET` = `mC0mYFUEn45W5E1GpanoaXlC`
 5. Click **Add** for each
 
 ---
@@ -72,10 +74,10 @@ CREATE INDEX IF NOT EXISTS idx_requests_payment_method ON public.requests(paymen
 Confirm the file `c:\Users\sujal\Desktop\QuickSwap\quick-cash-connect\.env.local` contains:
 
 ```
-VITE_RAZORPAY_KEY_ID=rzp_test_SjjIkGtcKKtyaj
+VITE_RAZORPAY_KEY_ID=rzp_live_Sjjz2UOhKOizyg
 ```
 
-⚠️ **IMPORTANT**: The `RAZORPAY_KEY_SECRET` is ONLY in Supabase and never in the frontend.
+⚠️ **IMPORTANT**: The `RAZORPAY_KEY_SECRET` is ONLY in Supabase Vault (never in frontend code).
 
 ---
 
@@ -94,57 +96,34 @@ npm run dev
 5. You should see Razorpay checkout modal
 6. Choose any payment method (UPI, Card, etc.)
 
-### 4.3 Test Credentials & Troubleshooting
+### 4.3 Payment Testing (LIVE MODE)
 
-**⚠️ IMPORTANT: If Standard Razorpay Test Credentials Don't Work**
+⚠️ **WARNING: You are now in LIVE MODE - Real money will be charged!**
 
-Razorpay's official test credentials are:
-- **Test Card**: 4111 1111 1111 1111 · CVV: 123 · Expiry: 12/26
-- **Test UPI**: test@razorpay
+Do NOT test with fake data. Only test with:
+1. **Small real transactions** (₹5-₹10)
+2. **Your own cards/accounts** 
+3. **Real bank transfers** if needed
 
-**If these show errors like:**
-- ❌ "International cards are not supported"
-- ❌ "Please enter a valid card number"
-- ❌ No manual UPI entry option (only QR)
+**Testing Steps:**
+1. Log in to your app
+2. Create a new request with a small amount (₹10)
+3. Click "Pay ₹{amount}"
+4. Enter your real card or use UPI/Net Banking
+5. Complete payment (real money will be charged)
+6. Verify request appears with status='active'
+7. Monitor your bank account for transaction confirmation
 
-**Your Razorpay account may not be fully activated for testing. Steps to fix:**
+**Monitor your Razorpay Dashboard:**
+- Go to: https://dashboard.razorpay.com
+- View all payments in real-time
+- Track settlement in your bank account (usually 2-3 days)
 
-1. **Go to Razorpay Dashboard**: https://dashboard.razorpay.com
-2. **Check Account Status:**
-   - Settings → Account Settings → Verify your phone & email
-   - Complete any pending KYC verification
-   - Ensure account is in **Test Mode** (not Live)
-3. **Check Payment Settings:**
-   - Settings → Payment Methods
-   - Enable: Cards, UPI, Net Banking, Wallets
-   - Verify all are enabled
-4. **Generate Fresh Test Keys:**
-   - Settings → API Keys
-   - Copy fresh **KEY_ID** (starts with `rzp_test_`)
-   - Copy fresh **KEY_SECRET**
-5. **Update Your Application:**
-   - Add new keys to Supabase Vault (RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET)
-   - Update .env.local with new KEY_ID
-6. **Test Again** with official test credentials above
-
----
-
-**Temporary Workaround: Use Razorpay Payment Links**
-
-If your account is still having issues:
-1. Create a Payment Link in Razorpay Dashboard
-2. Use the link directly without backend integration
-3. This bypasses account configuration issues
-
-See: https://razorpay.com/docs/payments/payment-gateway/payment-links/
-
----
-
-**If above doesn't work:**
-- Contact Razorpay support (support@razorpay.com)
-- Provide them your merchant ID
-- Ask them to verify test mode is enabled
-- Ask them to check if international test cards are blocked
+**If You Made a Test Payment:**
+- Check your Razorpay Dashboard
+- Look for the transaction in Payments section
+- Download receipt for your records
+- Refund must be processed manually if needed
 
 ---
 
@@ -280,15 +259,17 @@ To debug payment issues:
 
 ## Production Checklist
 
-Before going live:
-- [ ] Switch Razorpay to Live mode (contact Razorpay support)
-- [ ] Get Live KEY_ID and KEY_SECRET from Razorpay dashboard
-- [ ] Update Supabase secrets with live credentials
-- [ ] Update .env.local with live KEY_ID
+✅ **LIVE MODE ACTIVATED** - Your Razorpay account is now in LIVE mode
+
+Completed steps:
+- [x] Switch Razorpay to Live mode ✅
+- [x] Get Live KEY_ID and KEY_SECRET from Razorpay ✅
+- [ ] Update Supabase secrets with live credentials (DO THIS NOW)
+- [ ] Update .env.local with live KEY_ID (DONE)
 - [ ] Test complete payment flow with real card
 - [ ] Monitor Razorpay dashboard for payment activity
 - [ ] Set up webhook (optional) for payment status updates
-- [ ] Inform users about payment changes (UPI QR → Razorpay)
+- [ ] Inform users about payment system (Razorpay integration)
 
 ---
 
