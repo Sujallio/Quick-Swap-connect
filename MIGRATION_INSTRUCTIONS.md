@@ -95,11 +95,25 @@ npm run dev
 6. Choose any payment method (UPI, Card, etc.)
 
 ### 4.3 Test Credentials
-For testing without real payment:
-- **Card Number**: 4111111111111111
-- **Expiry**: Any future date (e.g., 12/25)
-- **CVV**: Any 3 digits (e.g., 123)
-- Click "Pay"
+
+**Option 1: UPI (Recommended for India)**
+- Select "UPI" payment method in Razorpay modal
+- Use any UPI ID (e.g., `success@razorpay` or `test@upi`)
+- Payment will succeed in test mode
+
+**Option 2: Indian Test Cards**
+Use only Indian-issued test cards (International cards are not supported in test mode):
+
+| Type | Card Number | Expiry | CVV | Status |
+|------|-------------|--------|-----|--------|
+| Visa | 4366041884166504 | Any future (e.g., 12/27) | Any 3 digits (e.g., 123) | ✅ Success |
+| MasterCard | 5481030053549590 | Any future | Any 3 digits | ✅ Success |
+| Amex | 374245455400126 | Any future | Any 4 digits | ✅ Success |
+
+**Option 3: Net Banking**
+- Select "Net Banking" in Razorpay modal
+- Choose HDFC, ICICI, or other Indian bank
+- Payment will succeed in test mode
 
 ---
 
