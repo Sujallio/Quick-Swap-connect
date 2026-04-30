@@ -96,13 +96,9 @@ npm run dev
 
 ### 4.3 Test Credentials
 
-**Option 1: UPI (Recommended for India)**
-- Select "UPI" payment method in Razorpay modal
-- Use any UPI ID (e.g., `success@razorpay` or `test@upi`)
-- Payment will succeed in test mode
+**⚠️ EASIEST METHOD: Use Indian Test Card (Recommended)**
 
-**Option 2: Indian Test Cards**
-Use only Indian-issued test cards (International cards are not supported in test mode):
+Click **Retry payment of ₹10** and select **Card** payment method:
 
 | Type | Card Number | Expiry | CVV | Status |
 |------|-------------|--------|-----|--------|
@@ -110,10 +106,23 @@ Use only Indian-issued test cards (International cards are not supported in test
 | MasterCard | 5481030053549590 | Any future | Any 3 digits | ✅ Success |
 | Amex | 374245455400126 | Any future | Any 4 digits | ✅ Success |
 
+Then click **Pay** → ✅ Payment succeeds instantly in test mode.
+
+---
+
+**Option 2: UPI (If you prefer)**
+- Select **UPI** in Razorpay modal
+- You'll see a **QR Code**
+- Look for a link/button like **"Enter VPA"** or **"Manual Entry"** (usually below the QR)
+- Click it to enter UPI ID manually: `success@razorpay` or `test@upi`
+- If no manual entry option appears, the QR code can be scanned with Razorpay test app
+
+---
+
 **Option 3: Net Banking**
-- Select "Net Banking" in Razorpay modal
-- Choose HDFC, ICICI, or other Indian bank
-- Payment will succeed in test mode
+- Select **Net Banking** in Razorpay modal
+- Choose any Indian bank (HDFC, ICICI, SBI, etc.)
+- Click **Pay** → ✅ Payment succeeds in test mode
 
 ---
 
