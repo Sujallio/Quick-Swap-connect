@@ -15,26 +15,31 @@ Your Razorpay credentials are now configured for LIVE mode:
 
 ### 1.2 Add to Supabase Environment Variables
 
-**If you're updating credentials (IMPORTANT - Don't create new, UPDATE existing):**
+⚠️ **Note: If Supabase Vault has permission issues, use Vercel Environment Variables instead (see below)**
 
+**Option A: Supabase Vault (Preferred but may have permission issues)**
 1. Go to: https://app.supabase.com/
 2. Select your project: `Quick-Swap-connect`
 3. Click **Settings** → **Vault**
-4. You'll see existing secrets: `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET`
-5. **Click on each secret to EDIT it:**
-   - Click `RAZORPAY_KEY_ID` → Edit → Change value to `rzp_live_Sjjz2UOhKOizyg` → Save
-   - Click `RAZORPAY_KEY_SECRET` → Edit → Change value to `mC0mYFUEn45W5E1GpanoaXlC` → Save
+4. If you can edit/delete secrets, update them with:
+   - `RAZORPAY_KEY_ID` = `rzp_live_Sjjz2UOhKOizyg`
+   - `RAZORPAY_KEY_SECRET` = `mC0mYFUEn45W5E1GpanoaXlC`
 
-**If secrets don't exist yet (first time setup):**
+**Option B: Vercel Environment Variables (Works if Vault has issues)**
+1. Go to: https://vercel.com/dashboard
+2. Select your project
+3. Click **Settings** → **Environment Variables**
+4. Add two variables:
+   - Name: `RAZORPAY_KEY_ID` | Value: `rzp_live_Sjjz2UOhKOizyg`
+   - Name: `RAZORPAY_KEY_SECRET` | Value: `mC0mYFUEn45W5E1GpanoaXlC`
+5. Select all environments (Production, Preview, Development)
+6. Click **Save** → **Redeploy** your project
 
-1. Go to: https://app.supabase.com/
-2. Select your project: `Quick-Swap-connect`
-3. Click **Settings** → **Vault**
-4. Click **Create Secret** button
-5. Create two secrets:
-   - Name: `RAZORPAY_KEY_ID` → Value: `rzp_live_Sjjz2UOhKOizyg`
-   - Name: `RAZORPAY_KEY_SECRET` → Value: `mC0mYFUEn45W5E1GpanoaXlC`
-6. Click **Create** for each
+**For Local Development:**
+- Update `.env.local`:
+  ```
+  VITE_RAZORPAY_KEY_ID=rzp_live_Sjjz2UOhKOizyg
+  ```
 
 ---
 
