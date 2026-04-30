@@ -96,33 +96,35 @@ npm run dev
 
 ### 4.3 Test Credentials
 
-**⚠️ EASIEST METHOD: Use Indian Test Card (Recommended)**
+**⚠️ RECOMMENDED: Use Net Banking (Most Reliable)**
 
-Click **Retry payment of ₹10** and select **Card** payment method:
+Click **Retry payment of ₹10** and select **Netbanking** payment method:
+- Choose any Indian bank: HDFC, ICICI, SBI, Axis, etc.
+- Click **Pay** → ✅ Payment succeeds instantly in test mode
+- No card or QR needed — easiest option!
+
+---
+
+**Alternative: Test Cards**
+
+If you want to use a card, try these (though some may not work with all Razorpay accounts):
 
 | Type | Card Number | Expiry | CVV | Status |
 |------|-------------|--------|-----|--------|
-| Visa | 4366041884166504 | Any future (e.g., 12/27) | Any 3 digits (e.g., 123) | ✅ Success |
-| MasterCard | 5481030053549590 | Any future | Any 3 digits | ✅ Success |
-| Amex | 374245455400126 | Any future | Any 4 digits | ✅ Success |
+| Visa | 5577031348110119 | Any future (e.g., 12/27) | Any 3 digits (e.g., 123) | Try this |
+| MasterCard | 5555555555554444 | Any future | Any 3 digits | Try this |
 
-Then click **Pay** → ✅ Payment succeeds instantly in test mode.
+⚠️ **If card shows "Please enter a valid card number":**
+- Use **Net Banking** instead (see above) — it's more reliable
+- Or scan the UPI QR code with your phone
 
 ---
 
-**Option 2: UPI (Requires QR Scanning)**
+**Option 3: UPI QR Code**
 - Select **UPI** in Razorpay modal
 - You'll see a **QR Code** displayed
-- **Note:** This Razorpay account only supports QR code scanning (no manual VPA entry)
 - Scan the QR using any UPI app on your phone (Google Pay, PhonePe, etc.)
-- Payment will succeed in test mode
-
----
-
-**Option 3: Net Banking**
-- Select **Net Banking** in Razorpay modal
-- Choose any Indian bank (HDFC, ICICI, SBI, etc.)
-- Click **Pay** → ✅ Payment succeeds in test mode
+- Confirm payment on your phone ✅
 
 ---
 
