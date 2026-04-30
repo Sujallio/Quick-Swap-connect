@@ -110,12 +110,12 @@ Then click **Pay** → ✅ Payment succeeds instantly in test mode.
 
 ---
 
-**Option 2: UPI (If you prefer)**
+**Option 2: UPI (Requires QR Scanning)**
 - Select **UPI** in Razorpay modal
-- You'll see a **QR Code**
-- Look for a link/button like **"Enter VPA"** or **"Manual Entry"** (usually below the QR)
-- Click it to enter UPI ID manually: `success@razorpay` or `test@upi`
-- If no manual entry option appears, the QR code can be scanned with Razorpay test app
+- You'll see a **QR Code** displayed
+- **Note:** This Razorpay account only supports QR code scanning (no manual VPA entry)
+- Scan the QR using any UPI app on your phone (Google Pay, PhonePe, etc.)
+- Payment will succeed in test mode
 
 ---
 
