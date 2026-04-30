@@ -94,37 +94,57 @@ npm run dev
 5. You should see Razorpay checkout modal
 6. Choose any payment method (UPI, Card, etc.)
 
-### 4.3 Test Credentials
+### 4.3 Test Credentials & Troubleshooting
 
-**⚠️ RECOMMENDED: Use Net Banking (Most Reliable)**
+**⚠️ IMPORTANT: If Standard Razorpay Test Credentials Don't Work**
 
-Click **Retry payment of ₹10** and select **Netbanking** payment method:
-- Choose any Indian bank: HDFC, ICICI, SBI, Axis, etc.
-- Click **Pay** → ✅ Payment succeeds instantly in test mode
-- No card or QR needed — easiest option!
+Razorpay's official test credentials are:
+- **Test Card**: 4111 1111 1111 1111 · CVV: 123 · Expiry: 12/26
+- **Test UPI**: test@razorpay
+
+**If these show errors like:**
+- ❌ "International cards are not supported"
+- ❌ "Please enter a valid card number"
+- ❌ No manual UPI entry option (only QR)
+
+**Your Razorpay account may not be fully activated for testing. Steps to fix:**
+
+1. **Go to Razorpay Dashboard**: https://dashboard.razorpay.com
+2. **Check Account Status:**
+   - Settings → Account Settings → Verify your phone & email
+   - Complete any pending KYC verification
+   - Ensure account is in **Test Mode** (not Live)
+3. **Check Payment Settings:**
+   - Settings → Payment Methods
+   - Enable: Cards, UPI, Net Banking, Wallets
+   - Verify all are enabled
+4. **Generate Fresh Test Keys:**
+   - Settings → API Keys
+   - Copy fresh **KEY_ID** (starts with `rzp_test_`)
+   - Copy fresh **KEY_SECRET**
+5. **Update Your Application:**
+   - Add new keys to Supabase Vault (RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET)
+   - Update .env.local with new KEY_ID
+6. **Test Again** with official test credentials above
 
 ---
 
-**Alternative: Test Cards**
+**Temporary Workaround: Use Razorpay Payment Links**
 
-If you want to use a card, try these (though some may not work with all Razorpay accounts):
+If your account is still having issues:
+1. Create a Payment Link in Razorpay Dashboard
+2. Use the link directly without backend integration
+3. This bypasses account configuration issues
 
-| Type | Card Number | Expiry | CVV | Status |
-|------|-------------|--------|-----|--------|
-| Visa | 5577031348110119 | Any future (e.g., 12/27) | Any 3 digits (e.g., 123) | Try this |
-| MasterCard | 5555555555554444 | Any future | Any 3 digits | Try this |
-
-⚠️ **If card shows "Please enter a valid card number":**
-- Use **Net Banking** instead (see above) — it's more reliable
-- Or scan the UPI QR code with your phone
+See: https://razorpay.com/docs/payments/payment-gateway/payment-links/
 
 ---
 
-**Option 3: UPI QR Code**
-- Select **UPI** in Razorpay modal
-- You'll see a **QR Code** displayed
-- Scan the QR using any UPI app on your phone (Google Pay, PhonePe, etc.)
-- Confirm payment on your phone ✅
+**If above doesn't work:**
+- Contact Razorpay support (support@razorpay.com)
+- Provide them your merchant ID
+- Ask them to verify test mode is enabled
+- Ask them to check if international test cards are blocked
 
 ---
 
