@@ -14,13 +14,27 @@ Your Razorpay credentials are now configured for LIVE mode:
 ⚠️ **IMPORTANT: These are LIVE credentials - real money will be charged!**
 
 ### 1.2 Add to Supabase Environment Variables
+
+**If you're updating credentials (IMPORTANT - Don't create new, UPDATE existing):**
+
 1. Go to: https://app.supabase.com/
 2. Select your project: `Quick-Swap-connect`
-3. Click **Settings** → **Vault** (or **Environment Variables**)
-4. Create two secrets:
-   - `RAZORPAY_KEY_ID` = `rzp_live_Sjjz2UOhKOizyg`
-   - `RAZORPAY_KEY_SECRET` = `mC0mYFUEn45W5E1GpanoaXlC`
-5. Click **Add** for each
+3. Click **Settings** → **Vault**
+4. You'll see existing secrets: `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET`
+5. **Click on each secret to EDIT it:**
+   - Click `RAZORPAY_KEY_ID` → Edit → Change value to `rzp_live_Sjjz2UOhKOizyg` → Save
+   - Click `RAZORPAY_KEY_SECRET` → Edit → Change value to `mC0mYFUEn45W5E1GpanoaXlC` → Save
+
+**If secrets don't exist yet (first time setup):**
+
+1. Go to: https://app.supabase.com/
+2. Select your project: `Quick-Swap-connect`
+3. Click **Settings** → **Vault**
+4. Click **Create Secret** button
+5. Create two secrets:
+   - Name: `RAZORPAY_KEY_ID` → Value: `rzp_live_Sjjz2UOhKOizyg`
+   - Name: `RAZORPAY_KEY_SECRET` → Value: `mC0mYFUEn45W5E1GpanoaXlC`
+6. Click **Create** for each
 
 ---
 
