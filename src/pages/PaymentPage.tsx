@@ -1,20 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { ArrowLeft, CheckCircle2, AlertCircle, Upload } from "lucide-react";
-
-// Sujal's UPI Configuration
-const UPI_ID = "sujalchh59-1@oksbi";
-
-// Generate QR code dynamically using your UPI ID
-const UPI_QR_IMAGE = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=upi://pay?pa=${UPI_ID}`;
+import { ArrowLeft, CheckCircle2, AlertCircle, CreditCard } from "lucide-react";
 
 interface RequestData {
   amount: number;
@@ -28,16 +20,20 @@ interface RequestData {
   lng?: number;
 }
 
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
+
 const PaymentPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const requestData = location.state?.requestData as RequestData;
 
-  const [transactionId, setTransactionId] = useState("");
-  const [screenshot, setScreenshot] = useState<File | null>(null);
-  const [screenshotPreview, setScreenshotPreview] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
 
   if (!user) {
     navigate("/login");
@@ -49,69 +45,110 @@ const PaymentPage = () => {
     return null;
   }
 
-  const handleScreenshotChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("File size must be less than 5MB");
-        return;
-      }
-      setScreenshot(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setScreenshotPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => setScriptLoaded(true);
+    script.onerror = () => {
+      toast.error("Failed to load payment gateway");
+      setScriptLoaded(false);
+    };
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  const getPostingFee = (amount: number): number => {
+    if (amount <= 0) return 5;
+    return Math.ceil(amount / 5000) * 5;
   };
 
-  const handleSubmit = async () => {
-    if (!transactionId.trim()) {
-      toast.error("Please enter the UPI Transaction ID");
-      return;
-    }
+  const totalAmount = getPostingFee(requestData.amount);
 
-    if (transactionId.trim().length < 5) {
-      toast.error("Transaction ID must be at least 5 characters");
+  const handlePayment = async () => {
+    if (!scriptLoaded) {
+      toast.error("Payment gateway not ready. Please try again.");
       return;
     }
 
     setLoading(true);
 
     try {
-      let screenshotUrl = null;
+      // Step 1: Create Razorpay order
+      const orderResponse = await supabase.functions.invoke("create-razorpay-order", {
+        body: {
+          amount: totalAmount,
+          purpose: "posting_fee",
+        },
+      });
 
-      // Upload screenshot if provided
-      if (screenshot) {
-        const fileName = `${user.id}/${Date.now()}-${screenshot.name}`;
-        const { error: uploadError, data } = await supabase.storage
-          .from("payment-screenshots")
-          .upload(fileName, screenshot, { upsert: false });
-
-        if (uploadError) {
-          toast.error("Failed to upload screenshot");
-          setLoading(false);
-          return;
-        }
-
-        screenshotUrl = data?.path || null;
-      }
-
-      // Check for duplicate transaction ID
-      const { data: existing } = await supabase
-        .from("requests")
-        .select("id")
-        .eq("transaction_id", transactionId.trim())
-        .single();
-
-      if (existing) {
-        toast.error("This Transaction ID has already been submitted");
+      if (orderResponse.error) {
+        toast.error("Failed to create order. Please try again.");
         setLoading(false);
         return;
       }
 
-      // Insert request with pending_verification status
-      const { error: insertError, data: insertedRequest } = await supabase
+      const { order_id, amount, key_id } = orderResponse.data;
+
+      // Step 2: Open Razorpay modal
+      const options = {
+        key: key_id,
+        amount: amount,
+        currency: "INR",
+        name: "QuickSwap",
+        description: "Posting Fee for Request",
+        order_id: order_id,
+        handler: async (response: any) => {
+          // Step 3: Verify payment signature
+          const verifyResponse = await supabase.functions.invoke("verify-razorpay-payment", {
+            body: {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            },
+          });
+
+          if (verifyResponse.error || !verifyResponse.data.verified) {
+            toast.error("Payment verification failed. Please contact support.");
+            setLoading(false);
+            return;
+          }
+
+          // Step 4: Save request to database
+          await saveRequest(response.razorpay_payment_id);
+        },
+        modal: {
+          ondismiss: () => {
+            toast.info("Payment cancelled");
+            setLoading(false);
+          },
+        },
+        theme: {
+          color: "#000000",
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+
+      rzp.on("payment.failed", (response: any) => {
+        toast.error(`Payment failed: ${response.error.description}`);
+        setLoading(false);
+      });
+    } catch (err: any) {
+      console.error("Payment error:", err);
+      toast.error(err.message || "An error occurred. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  const saveRequest = async (paymentId: string) => {
+    try {
+      const { error: insertError } = await supabase
         .from("requests")
         .insert({
           user_id: user.id,
@@ -124,10 +161,9 @@ const PaymentPage = () => {
           description: requestData.description,
           latitude: requestData.lat ?? null,
           longitude: requestData.lng ?? null,
-          transaction_id: transactionId.trim(),
-          payment_method: "upi_manual",
-          payment_screenshot: screenshotUrl,
-          status: "pending_verification",
+          payment_id: paymentId,
+          payment_method: "razorpay",
+          status: "active",
         } as any)
         .select()
         .single();
@@ -154,25 +190,16 @@ const PaymentPage = () => {
           console.error("Failed to send notifications:", err);
         });
 
-      toast.success("Request submitted successfully!");
+      toast.success("Payment successful! Your request is now live.");
       setTimeout(() => {
         navigate("/");
       }, 1500);
     } catch (err: any) {
-      console.error("Payment submission error:", err);
-      toast.error(err.message || "An error occurred. Please try again.");
-    } finally {
+      console.error("Save request error:", err);
+      toast.error("An error occurred. Please try again.");
       setLoading(false);
     }
   };
-
-  const getPostingFee = (amount: number): number => {
-    if (amount <= 0) return 5;
-    return Math.ceil(amount / 5000) * 5;
-  };
-
-  // Users only pay the posting fee, not the request amount
-  const totalAmount = getPostingFee(requestData.amount);
 
   return (
     <div className="pb-24 pt-4 px-4">
@@ -211,125 +238,56 @@ const PaymentPage = () => {
           </CardContent>
         </Card>
 
-        {/* QR Code Section */}
+        {/* Payment Method Card */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">UPI Payment</CardTitle>
-            <CardDescription>Scan the QR code below to send payment</CardDescription>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              Secure Payment
+            </CardTitle>
+            <CardDescription>Powered by Razorpay</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex flex-col items-center space-y-4">
-              <img
-                src={UPI_QR_IMAGE}
-                alt="UPI QR Code"
-                className="w-64 h-64 border-4 border-primary rounded-lg"
-              />
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-1">Or send to:</p>
-                <p className="text-lg font-bold text-primary">{UPI_ID}</p>
-              </div>
-            </div>
-
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                After scanning and completing the payment, enter your UPI Transaction ID below
+            <Alert className="border-green-200 bg-green-50">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                Your payment is secure and encrypted. We accept all major payment methods.
               </AlertDescription>
             </Alert>
-          </CardContent>
-        </Card>
 
-        {/* Transaction ID Input */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Verify Payment</CardTitle>
-            <CardDescription>Enter your transaction details</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="txnId">
-                UPI Transaction ID <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="txnId"
-                placeholder="e.g., UPI12345678901234"
-                value={transactionId}
-                onChange={(e) => setTransactionId(e.target.value)}
-                className="h-12 font-mono"
-                disabled={loading}
-              />
-              <p className="text-xs text-muted-foreground">
-                Found in your UPI app under transaction history
-              </p>
-            </div>
-
-            {/* Screenshot Upload (Optional) */}
-            <div className="space-y-2">
-              <Label htmlFor="screenshot">
-                Payment Screenshot <span className="text-xs text-muted-foreground">(optional)</span>
-              </Label>
-              <div className="flex flex-col gap-2">
-                <input
-                  id="screenshot"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleScreenshotChange}
-                  disabled={loading}
-                  className="hidden"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="h-12"
-                  onClick={() => document.getElementById("screenshot")?.click()}
-                  disabled={loading}
-                >
-                  <Upload className="mr-2 h-4 w-4" />
-                  {screenshot ? "Screenshot Uploaded" : "Upload Screenshot"}
-                </Button>
-                {screenshotPreview && (
-                  <div className="relative w-full">
-                    <img
-                      src={screenshotPreview}
-                      alt="Payment screenshot preview"
-                      className="w-full h-40 object-cover rounded-lg border"
-                    />
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      className="absolute top-2 right-2"
-                      onClick={() => {
-                        setScreenshot(null);
-                        setScreenshotPreview("");
-                      }}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                )}
+            <div className="bg-muted p-4 rounded-lg">
+              <p className="text-sm text-muted-foreground mb-2">Payment Methods Accepted:</p>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>✓ Credit Card</div>
+                <div>✓ Debit Card</div>
+                <div>✓ UPI</div>
+                <div>✓ Net Banking</div>
+                <div>✓ Wallet</div>
+                <div>✓ BNPL</div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Helps us verify payment faster. Max 5MB.
-              </p>
             </div>
           </CardContent>
         </Card>
 
         {/* Submission Section */}
         <Alert className="border-primary bg-primary/5">
-          <CheckCircle2 className="h-4 w-4 text-primary" />
+          <AlertCircle className="h-4 w-4 text-primary" />
           <AlertDescription>
-            Once submitted, your request will be reviewed by our team. You'll see it live after verification.
+            Once payment is successful, your request will be live immediately and visible to other users.
           </AlertDescription>
         </Alert>
 
         <Button
-          onClick={handleSubmit}
-          disabled={loading}
+          onClick={handlePayment}
+          disabled={loading || !scriptLoaded}
           className="w-full h-12 text-base font-semibold"
         >
-          {loading ? "Submitting..." : "Submit Payment & Request"}
+          {!scriptLoaded ? "Loading Payment Gateway..." : loading ? "Processing..." : `Pay ₹${totalAmount}`}
         </Button>
+
+        <p className="text-center text-xs text-muted-foreground">
+          By proceeding, you agree to our Terms of Service
+        </p>
       </div>
     </div>
   );

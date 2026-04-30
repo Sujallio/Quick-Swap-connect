@@ -1,181 +1,250 @@
-# ⚠️ Manual Database Migration Required
+# Razorpay Payment Integration Setup
 
-The code for the UPI payment system has been deployed, but you need to:
-1. Apply the SQL migration to your Supabase database
-2. Create a storage bucket for payment screenshots
-3. Update UPI configuration
+This application uses **Razorpay Standard Checkout** for secure payment processing. Follow these steps to complete the setup.
 
 ---
 
-## Step 1: Apply the SQL Migration
+## Step 1: Set Razorpay Credentials in Supabase
 
-### 1.1 Go to Supabase Dashboard
+### 1.1 Get Your Credentials
+Your Razorpay credentials are already configured:
+- **KEY_ID**: `rzp_test_SjeoufP8HM4txO`
+- **KEY_SECRET**: `rEBqnJRU4rWltdHs2FYGYB1b`
+
+### 1.2 Add to Supabase Environment Variables
+1. Go to: https://app.supabase.com/
+2. Select your project: `Quick-Swap-connect`
+3. Click **Settings** → **Vault** (or **Environment Variables**)
+4. Create two secrets:
+   - `RAZORPAY_KEY_ID` = `rzp_test_SjeoufP8HM4txO`
+   - `RAZORPAY_KEY_SECRET` = `rEBqnJRU4rWltdHs2FYGYB1b`
+5. Click **Add** for each
+
+---
+
+## Step 2: Apply Database Migration
+
+### 2.1 Go to Supabase SQL Editor
 - Visit: https://app.supabase.com/
-- Select your project: `Quick-Swap-connect`
+- Click **SQL Editor** → **New Query**
 
-### 1.2 Navigate to SQL Editor
-- Click on **SQL Editor** in the left sidebar
-- Click **New Query**
-
-### 1.3 Copy and Paste the SQL
-Copy this entire SQL code:
+### 2.2 Copy and Execute This SQL
 
 ```sql
--- Add UPI payment fields to requests table
+-- Replace transaction_id with payment_id for Razorpay
 ALTER TABLE public.requests
-ADD COLUMN IF NOT EXISTS transaction_id TEXT UNIQUE,
-ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT 'upi_manual',
-ADD COLUMN IF NOT EXISTS payment_screenshot TEXT;
+DROP COLUMN IF EXISTS transaction_id CASCADE;
 
--- Update RLS policy to show only verified requests publicly
+-- Add Razorpay payment fields
+ALTER TABLE public.requests
+ADD COLUMN IF NOT EXISTS payment_id TEXT UNIQUE,
+ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT 'razorpay';
+
+-- Drop old RLS policies and create new one for active requests
+DROP POLICY IF EXISTS "Users can view verified requests" ON public.requests;
 DROP POLICY IF EXISTS "Users can view all active requests" ON public.requests;
-CREATE POLICY "Users can view verified requests"
+
+CREATE POLICY "Users can view all active requests"
   ON public.requests
   FOR SELECT
-  USING (status = 'verified');
+  USING (status = 'active');
 
--- Create index for transaction_id for uniqueness and faster lookups
-CREATE UNIQUE INDEX IF NOT EXISTS idx_requests_transaction_id ON public.requests(transaction_id) WHERE transaction_id IS NOT NULL;
+-- Create index for payment_id
+CREATE UNIQUE INDEX IF NOT EXISTS idx_requests_payment_id ON public.requests(payment_id) WHERE payment_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_requests_payment_method ON public.requests(payment_method);
 ```
 
-### 1.4 Execute the Query
-- Paste the SQL into the editor
-- Click **Run** (or press `Ctrl+Enter`)
+### 2.3 Verify Execution
+- Click **Run** (or `Ctrl+Enter`)
 - You should see: "Query executed successfully"
+- Check **Table Editor** → **requests** to verify new columns exist
 
 ---
 
-## Step 2: Create Storage Bucket for Payment Screenshots
+## Step 3: Frontend Configuration
 
-### 2.1 Navigate to Storage
-- Click on **Storage** in the left sidebar
-- Click **Create a new bucket**
+✅ **Already Done** - Frontend is configured to use Razorpay:
+- Razorpay script loaded dynamically on Payment Page
+- Public Key ID set in `.env.local`
+- Payment modal integration complete
 
-### 2.2 Create the Bucket
-- **Bucket name:** `payment-screenshots`
-- **Privacy:** Public (so images can be viewed)
-- Click **Create bucket**
-
-### 2.3 Set RLS Policies
-Once created, click on the bucket → **Policies**
-
-Add this policy to allow authenticated users to upload:
+### 3.1 Verify .env.local
+Confirm the file `c:\Users\sujal\Desktop\QuickSwap\quick-cash-connect\.env.local` contains:
 
 ```
-Policy Name: Users can upload payment screenshots
-Definition: CREATE POLICY "Users can upload payment screenshots" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'payment-screenshots' AND (SELECT COUNT(*) FROM public.requests WHERE payment_screenshot = name) = 0);
+VITE_RAZORPAY_KEY_ID=rzp_test_SjeoufP8HM4txO
 ```
 
-Or simply allow public access (simpler):
-- Click **Add policy**
-- Choose: **For SELECT** → **Public access** → **Save**
-- Click **Add policy**
-- Choose: **For INSERT** → **Public access** → **Save**
+⚠️ **IMPORTANT**: The `RAZORPAY_KEY_SECRET` is ONLY in Supabase and never in the frontend.
 
 ---
 
-## Step 3: Update UPI Configuration
+## Step 4: Test the Payment Flow
 
-### 3.1 Edit PaymentPage.tsx
-Open `src/pages/PaymentPage.tsx` and update:
+### 4.1 Start Your Development Server
+```bash
+npm run dev
+```
+
+### 4.2 Test Payment
+1. Log in to the app
+2. Create a new request (Post Request)
+3. Enter request details and click "Post Request"
+4. On Payment Page, click **Pay ₹{amount}** button
+5. You should see Razorpay checkout modal
+6. Choose any payment method (UPI, Card, etc.)
+
+### 4.3 Test Credentials
+For testing without real payment:
+- **Card Number**: 4111111111111111
+- **Expiry**: Any future date (e.g., 12/25)
+- **CVV**: Any 3 digits (e.g., 123)
+- Click "Pay"
+
+---
+
+## System Architecture
+
+### Frontend (React + Vite)
+```
+PaymentPage.tsx
+├── Load Razorpay script dynamically
+├── Call create-razorpay-order function
+├── Open Razorpay modal with order_id
+└── On success: Call verify-razorpay-payment
+```
+
+### Backend (Supabase Edge Functions - Deno)
+```
+create-razorpay-order
+├── Validate amount ≥ ₹100
+├── Call Razorpay API with credentials
+└── Return: order_id, amount, key_id
+
+verify-razorpay-payment
+├── Check HMAC-SHA256 signature
+├── Compare with Razorpay signature
+└── Return: verified status
+```
+
+### Database
+```
+requests table:
+├── payment_id (UNIQUE, set by Razorpay)
+├── payment_method (DEFAULT: 'razorpay')
+├── status (active/completed/cancelled)
+└── amount (request amount in ₹)
+```
+
+---
+
+## Payment Flow
+
+1. **User creates request** → Form data sent to Payment Page
+2. **Payment Page opens** → Shows amount breakdown
+3. **User clicks "Pay ₹{amount}"** → Razorpay creates order
+4. **Razorpay Modal Opens** → User selects payment method (UPI, Card, etc.)
+5. **Payment successful** → Signature verified
+6. **Request goes live** → Status = 'active', visible to all users
+7. **Notification emails sent** → To users in same city
+
+---
+
+## Posting Fee Calculation
 
 ```typescript
-// Line ~7
-const UPI_QR_IMAGE = "YOUR_QR_CODE_URL_HERE";  // Replace with actual QR code image URL
-const UPI_ID = "your_actual_upi_id@bank";       // Replace with your UPI ID
+getPostingFee(amount: number): number
+├── If amount ≤ 0: fee = ₹5
+├── If amount ≤ 5000: fee = ₹5
+├── If amount 5001-10000: fee = ₹10
+├── If amount 10001-15000: fee = ₹15
+└── Pattern: ₹5 per ₹5000 range
 ```
 
-**To generate a QR code:**
-1. Visit: https://www.qr-code-generator.com/
-2. Enter your UPI address (e.g., `9876543210@upi` or `name@okhdfcbank`)
-3. Download the QR image as PNG
-4. Upload to Supabase Storage → `payment-screenshots` bucket
-5. Copy the public URL and paste into `UPI_QR_IMAGE`
-
-Or use dynamic QR generation:
-```typescript
-const UPI_ID = "your_upi_id@bank";
-const UPI_QR_IMAGE = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=upi://pay?pa=${UPI_ID}`;
-```
+Example:
+- Request ₹3000 → Fee ₹5
+- Request ₹5000 → Fee ₹5
+- Request ₹5001 → Fee ₹10
+- Request ₹10000 → Fee ₹10
+- Request ₹30000 → Fee ₹30
 
 ---
 
-## What This Migration Does:
+## What Changed from UPI System
 
-✅ Adds `transaction_id` field (unique, prevents duplicates)
-✅ Adds `payment_method` field (defaults to 'upi_manual')
-✅ Adds `payment_screenshot` field (for optional payment proof)
-✅ Updates RLS policy to only show verified requests publicly
-✅ Creates storage bucket for payment screenshot uploads
-✅ Creates indexes for faster lookups and unique constraint enforcement
+❌ **Removed:**
+- UPI QR code generation
+- Manual transaction ID entry
+- Payment screenshot uploads
+- Admin verification workflow
+- 'pending_verification' status
 
----
-
-## Verification Checklist:
-
-After running the migration, verify:
-
-1. ✓ Go to **Table Editor** → **requests**
-2. ✓ Check that new columns appear: `transaction_id`, `payment_method`, `payment_screenshot`
-3. ✓ Confirm `payment_method` has default value `'upi_manual'`
-4. ✓ Go to **Storage** → verify `payment-screenshots` bucket exists
-5. ✓ Test creating a new request (should redirect to `/payment`)
-
-## Important Notes:
-
-⚠️ **No requests are public yet** - After this migration, requests with `status = 'active'` will NOT be visible. They must be manually verified first by admins.
-
-🔧 **Existing requests**: Existing requests will still have `status = 'active'`. You may want to:
-- Update them to `status = 'verified'` if they're valid
-- Update them to `status = 'rejected'` if they're spam
-
-### Optional: Update Existing Requests
-To make all existing requests visible (if they were previously active):
-```sql
-UPDATE public.requests 
-SET status = 'verified' 
-WHERE status = 'active';
-```
-
-## Feature Overview:
-
-### User Flow:
-1. User fills out request form (Create Request page)
-2. Clicks "Post Request" → Redirected to Payment Page
-3. User scans UPI QR code and makes payment
-4. User enters transaction ID (and optionally upload screenshot)
-5. Clicks "Submit Payment & Request"
-6. Request saved with `status = 'pending_verification'`
-7. Emails sent to users in same city (async)
-
-### UPI QR Settings:
-Update the UPI details in `src/pages/PaymentPage.tsx`:
-```typescript
-const UPI_QR_IMAGE = "https://via.placeholder.com/300x300?text=UPI+QR+Code"; // Replace with actual QR
-const UPI_ID = "yourname@upi"; // Replace with your UPI address
-```
-
-## Troubleshooting:
-
-If you get an error like `"relation already exists"`:
-- This means the column already exists
-- The `IF NOT EXISTS` clauses should handle this
-- Just re-run the query
-
-If you see `"permission denied"`:
-- Make sure you're logged in with an admin account
-- Go to **Project Settings** → **Database** → verify role permissions
-
-## Next Steps:
-
-1. ✅ Apply the migration (above)
-2. ✅ Update UPI QR image and UPI ID in PaymentPage.tsx
-3. ✅ Test the complete flow:
-   - Create a test request
-   - Enter fake transaction ID (e.g., "TXN123456789")
-   - Verify the request is created with pending_verification status
+✅ **Added:**
+- Razorpay Standard Checkout
+- Multiple payment methods (UPI, Card, Net Banking, Wallet, BNPL)
+- Automatic signature verification
+- Immediate request activation (status = 'active')
+- Secure backend order creation
 
 ---
 
-**Need help?** Check the [PaymentPage.tsx](../src/pages/PaymentPage.tsx) for implementation details.
+## Troubleshooting
+
+### Payment Gateway Not Loading
+- Check browser console for errors
+- Verify Razorpay script URL: `https://checkout.razorpay.com/v1/checkout.js`
+- Clear browser cache and reload
+
+### Order Creation Fails
+- ✓ Verify RAZORPAY_KEY_ID is set in Supabase Vault
+- ✓ Verify amount ≥ ₹100 (minimum Razorpay amount)
+- ✓ Check Supabase function logs for errors
+
+### Signature Verification Fails
+- ✓ Verify RAZORPAY_KEY_SECRET is set in Supabase Vault
+- ✓ Check that secrets are correctly copied (no extra spaces)
+- ✓ View Supabase function logs for detailed error
+
+### Requests Not Visible on Home Page
+- ✓ Verify status = 'active' in database
+- ✓ Check that requests are in the user's city (or city filter is off)
+- ✓ Verify RLS policy allows SELECT for status = 'active'
+
+---
+
+## Edge Function Logs
+
+To debug payment issues:
+1. Go to **Supabase Dashboard** → **Edge Functions**
+2. Click on function name (create-razorpay-order or verify-razorpay-payment)
+3. Click **Logs** tab
+4. Look for errors and check request/response data
+
+---
+
+## Security Notes
+
+⚠️ **KEY SECURITY RULES:**
+- ✅ Public Key ID is in frontend (.env.local)
+- ❌ Secret Key NEVER reaches frontend code
+- ✅ Secret Key only in Supabase Vault (backend)
+- ✅ All payments verified server-side before saving
+- ✅ HMAC-SHA256 signature validation prevents tampering
+
+---
+
+## Production Checklist
+
+Before going live:
+- [ ] Switch Razorpay to Live mode (contact Razorpay support)
+- [ ] Get Live KEY_ID and KEY_SECRET from Razorpay dashboard
+- [ ] Update Supabase secrets with live credentials
+- [ ] Update .env.local with live KEY_ID
+- [ ] Test complete payment flow with real card
+- [ ] Monitor Razorpay dashboard for payment activity
+- [ ] Set up webhook (optional) for payment status updates
+- [ ] Inform users about payment changes (UPI QR → Razorpay)
+
+---
+
+**Questions?** Check [Razorpay Documentation](https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/integration-steps/)

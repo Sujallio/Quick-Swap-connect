@@ -27,10 +27,6 @@ function loadRazorpayScript(): Promise<void> {
 export async function processPayment(amountINR: number, purpose: string): Promise<PaymentResult> {
   await loadRazorpayScript();
 
-  // Get current session token
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) throw new Error("Please login first");
-
   // Create order via edge function
   const { data: orderData, error: orderError } = await supabase.functions.invoke(
     "create-razorpay-order",
@@ -41,31 +37,15 @@ export async function processPayment(amountINR: number, purpose: string): Promis
     throw new Error(orderData?.error || orderError?.message || "Failed to create payment order");
   }
 
-  // Open Razorpay checkout with UPI-only payment
+  // Open Razorpay checkout
   return new Promise<PaymentResult>((resolve, reject) => {
     const options = {
       key: orderData.key_id,
       amount: orderData.amount,
       currency: "INR",
-      name: "QuickSwap Cash",
-      description: purpose === "posting" ? "Request Posting Fee" : "Contact Unlock Fee",
+      name: "QuickSwap",
+      description: purpose === "unlock" ? "Contact Unlock Fee" : "Request Posting Fee",
       order_id: orderData.order_id,
-      // UPI-only payment method
-      method: {
-        upi: true,
-        netbanking: false,
-        card: false,
-        wallet: false,
-        emi: false,
-      },
-      // Prefill user information
-      prefill: {
-        email: session?.user?.email || "",
-      },
-      notes: {
-        purpose: purpose,
-        user_id: session?.user?.id,
-      },
       handler: async (response: any) => {
         try {
           // Verify payment via edge function
@@ -93,8 +73,7 @@ export async function processPayment(amountINR: number, purpose: string): Promis
       modal: {
         ondismiss: () => reject(new Error("Payment cancelled by user")),
       },
-      theme: { color: "#16a34a" },
-      timeout: 900, // 15 minutes timeout for UPI
+      theme: { color: "#000000" },
     };
 
     const rzp = new window.Razorpay(options);
