@@ -26,9 +26,6 @@ const ContactPage = () => {
           email: form.email.trim(),
           message: form.message.trim(),
         },
-        headers: {
-          Authorization: "Bearer sb_publishable_qKfH2SysjxlJo-eIQ6fyEA_FWg-BsKH",
-        },
       });
 
       if (error) {
