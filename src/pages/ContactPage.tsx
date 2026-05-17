@@ -19,17 +19,20 @@ const ContactPage = () => {
     }
     setSending(true);
     try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: form.name.trim(),
-          email: form.email.trim(),
-          message: form.message.trim(),
-        }),
-      });
+      const response = await fetch(
+        "https://pjaskdhvqliwuvsmrlso.supabase.co/functions/v1/send-contact-email",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: form.name.trim(),
+            email: form.email.trim(),
+            message: form.message.trim(),
+          }),
+        }
+      );
 
       const data = await response.json();
 

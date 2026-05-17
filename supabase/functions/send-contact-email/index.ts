@@ -6,17 +6,36 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Only allow POST requests
+  if (req.method !== "POST") {
+    return new Response(
+      JSON.stringify({ error: "Method not allowed" }),
+      { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
   try {
-    const { name, email, message } = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { name, email, message } = body;
 
     // Validate input
     if (!name || !email || !message) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
+        JSON.stringify({ error: "Missing required fields: name, email, message" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -57,9 +76,6 @@ serve(async (req) => {
       `,
     };
 
-    console.log("Sending email with payload:", JSON.stringify(emailPayload));
-    console.log("API Key exists:", !!RESEND_API_KEY);
-
     const emailRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -70,11 +86,9 @@ serve(async (req) => {
     });
 
     const result = await emailRes.json();
-    console.log("Resend API response status:", emailRes.status);
-    console.log("Resend API response:", JSON.stringify(result));
 
     if (!emailRes.ok) {
-      console.error("Resend API error:", JSON.stringify(result));
+      console.error("Resend API error:", result);
       return new Response(
         JSON.stringify({ error: "Failed to send email", details: result }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
