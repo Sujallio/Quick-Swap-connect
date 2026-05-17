@@ -27,7 +27,7 @@ const ContactPage = () => {
           message: form.message.trim(),
         },
         headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: "Bearer sb_publishable_qKfH2SysjxlJo-eIQ6fyEA_FWg-BsKH",
         },
       });
 
