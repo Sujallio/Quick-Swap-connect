@@ -17,7 +17,7 @@ interface RequestData {
   urgency: string;
   description: string;
   lat?: number;
-  lng?: number;
+  lng?: number;   
 }
 
 declare global {

@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ArrowLeft, Mail, Send } from "lucide-react";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import Footer from "@/components/Footer";
 
 const ContactPage = () => {
@@ -20,16 +19,22 @@ const ContactPage = () => {
     }
     setSending(true);
     try {
-      const { data, error } = await supabase.functions.invoke("send-contact-email", {
-        body: {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           name: form.name.trim(),
           email: form.email.trim(),
           message: form.message.trim(),
-        },
+        }),
       });
 
-      if (error) {
-        toast.error(error.message || "Failed to send message");
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || "Failed to send message");
         setSending(false);
         return;
       }
